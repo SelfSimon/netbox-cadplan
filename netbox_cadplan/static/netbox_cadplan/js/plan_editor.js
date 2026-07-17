@@ -199,7 +199,7 @@
       panel.innerHTML = `<p class="text-danger mb-0">${message}</p>`;
     }
 
-    const networkErrorConfirm = gettext('Erreur réseau lors de la confirmation du calque.');
+    const networkErrorConfirm = gettext('Network error while confirming the layer.');
 
     function doConfirm(layerName, confirmBtn) {
       confirmBtn.disabled = true;
@@ -224,8 +224,8 @@
       const message = document.createElement('p');
       message.textContent = interpolate(
         gettext(
-          '%(unchanged)s zone(s) inchangée(s), %(removed)s zone(s) supprimée(s) ' +
-          '(%(objects)s objet(s) posé(s) seront retirés), %(created)s nouvelle(s) zone(s).'
+          '%(unchanged)s zone(s) unchanged, %(removed)s zone(s) removed ' +
+          '(%(objects)s placed object(s) will be removed), %(created)s new zone(s).'
         ),
         {
           unchanged: summary.unchanged, removed: summary.removed,
@@ -335,7 +335,7 @@
     const width = parseInt(container.dataset.width, 10) || 1200;
     const height = parseInt(container.dataset.height, 10) || 800;
 
-    container.innerHTML = `<p class="text-muted p-3 mb-0">${gettext("Chargement de l'aperçu…")}</p>`;
+    container.innerHTML = `<p class="text-muted p-3 mb-0">${gettext('Loading preview…')}</p>`;
 
     fetch(`${baseUrl}?layer=${encodeURIComponent(layerName)}`)
       .then(function (r) { return r.json(); })
@@ -346,11 +346,11 @@
         }
         const strokes = data.strokes || [];
         if (!strokes.length) {
-          container.innerHTML = `<p class="text-muted p-3 mb-0">${gettext('Aucun élément trouvé sur ce calque.')}</p>`;
+          container.innerHTML = `<p class="text-muted p-3 mb-0">${gettext('No elements found on this layer.')}</p>`;
           return;
         }
         if (typeof Konva === 'undefined') {
-          container.innerHTML = `<p class="text-danger p-3 mb-0">${gettext("Konva.js n'a pas pu être chargé.")}</p>`;
+          container.innerHTML = `<p class="text-danger p-3 mb-0">${gettext('Konva.js could not be loaded.')}</p>`;
           return;
         }
 
@@ -383,7 +383,7 @@
         layer.draw();
       })
       .catch(function () {
-        container.innerHTML = `<p class="text-danger p-3 mb-0">${gettext("Erreur réseau lors de l'aperçu du calque.")}</p>`;
+        container.innerHTML = `<p class="text-danger p-3 mb-0">${gettext('Network error while previewing the layer.')}</p>`;
       });
   }
 
@@ -391,8 +391,8 @@
   // et la vue d'un local (initLocationCanvas). ---
 
   const NAME_POSITIONS = [
-    ['top', gettext('En haut')], ['bottom', gettext('En bas')], ['left', gettext('À gauche')],
-    ['right', gettext('À droite')], ['center', gettext('Au centre')],
+    ['top', gettext('Top')], ['bottom', gettext('Bottom')], ['left', gettext('Left')],
+    ['right', gettext('Right')], ['center', gettext('Center')],
   ];
 
   function shapeHalfExtents(shapeNode) {
@@ -1163,7 +1163,7 @@
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'btn btn-sm btn-outline-primary';
-        btn.textContent = gettext('Placer');
+        btn.textContent = gettext('Place');
         btn.addEventListener('click', function () {
           btn.disabled = true;
           const url = resolvePlaceUrl(item);
@@ -1212,7 +1212,7 @@
 
       const nav = document.createElement('ul');
       nav.className = 'nav nav-tabs mb-2';
-      [['racks', gettext('Racks')], ['devices', gettext('Devices non rackés')]].forEach(function (entry) {
+      [['racks', gettext('Racks')], ['devices', gettext('Unracked devices')]].forEach(function (entry) {
         const key = entry[0], label = entry[1];
         const li = document.createElement('li');
         li.className = 'nav-item';
@@ -1234,7 +1234,7 @@
       if (!items.length) {
         const empty = document.createElement('p');
         empty.className = 'text-muted small mb-0';
-        empty.textContent = gettext('Aucun objet disponible.');
+        empty.textContent = gettext('No objects available.');
         container.appendChild(empty);
         return;
       }
@@ -1266,7 +1266,7 @@
     const csrftoken = getCsrfToken();
 
     function clear() {
-      container.innerHTML = `<p class="text-muted mb-0">${gettext('Cliquez sur un objet placé sur le plan pour voir ses propriétés.')}</p>`;
+      container.innerHTML = `<p class="text-muted mb-0">${gettext('Click an object placed on the plan to view its properties.')}</p>`;
     }
     clear();
 
@@ -1312,7 +1312,7 @@
       const snapLabel = document.createElement('label');
       snapLabel.className = 'form-check-label';
       snapLabel.htmlFor = 'np-snap-to-wall';
-      snapLabel.textContent = gettext('Aimanter au mur');
+      snapLabel.textContent = gettext('Snap to wall');
       snapWrapper.appendChild(snapInput);
       snapWrapper.appendChild(snapLabel);
       container.appendChild(snapWrapper);
@@ -1327,7 +1327,7 @@
       const outsideLabel = document.createElement('label');
       outsideLabel.className = 'form-check-label';
       outsideLabel.htmlFor = 'np-outside-wall';
-      outsideLabel.textContent = gettext('Hors des murs');
+      outsideLabel.textContent = gettext('Outside the walls');
       outsideWrapper.appendChild(outsideInput);
       outsideWrapper.appendChild(outsideLabel);
       container.appendChild(outsideWrapper);
@@ -1347,7 +1347,7 @@
 
       const posLabel = document.createElement('label');
       posLabel.className = 'form-label';
-      posLabel.textContent = gettext('Position du nom');
+      posLabel.textContent = gettext('Name position');
       container.appendChild(posLabel);
       const posSelect = document.createElement('select');
       posSelect.className = 'form-select mb-3';
@@ -1424,7 +1424,7 @@
       const removeBtn = document.createElement('button');
       removeBtn.type = 'button';
       removeBtn.className = 'btn btn-outline-danger';
-      removeBtn.textContent = gettext('Retirer du plan');
+      removeBtn.textContent = gettext('Remove from plan');
       removeBtn.addEventListener('click', function () {
         removeBtn.disabled = true;
         fetch(urls.remove, {
@@ -1899,7 +1899,7 @@
       panel.innerHTML = '';
 
       const title = document.createElement('p');
-      title.innerHTML = `<strong>${interpolate(gettext('Zone %(number)s sélectionnée'), { number: zone.number }, true)}</strong>`;
+      title.innerHTML = `<strong>${interpolate(gettext('Zone %(number)s selected'), { number: zone.number }, true)}</strong>`;
       panel.appendChild(title);
 
       const select = document.createElement('select');
@@ -1907,7 +1907,7 @@
 
       const noneOption = document.createElement('option');
       noneOption.value = '';
-      noneOption.textContent = gettext('— Aucun local —');
+      noneOption.textContent = gettext('— No location —');
       select.appendChild(noneOption);
 
       locations.forEach(function (loc) {
@@ -1923,17 +1923,17 @@
       const assocBtn = document.createElement('button');
       assocBtn.type = 'button';
       assocBtn.className = 'btn btn-outline-primary';
-      assocBtn.textContent = interpolate(gettext('Associer à la zone %(number)s'), { number: zone.number }, true);
+      assocBtn.textContent = interpolate(gettext('Associate with zone %(number)s'), { number: zone.number }, true);
       assocBtn.addEventListener('click', function () {
         const locationId = select.value ? parseInt(select.value, 10) : null;
         const isUnlinking = !!zone.location_id && !locationId;
         if (isUnlinking) {
           const confirmMessage = interpolate(
             gettext(
-              "Voulez-vous vraiment délier le local « %(location_name)s » de la zone %(number)s ? " +
-              "Une fois enregistré, l'onglet \"Plan\" disparaîtra de la page de ce local, le numéro de zone " +
-              "réapparaîtra sur le plan à la place de son nom, et les devices/racks posés dans cette zone " +
-              "en seront retirés (ils resteront dans leur local NetBox, mais ne seront plus placés sur le plan)."
+              'Are you sure you want to unlink location "%(location_name)s" from zone %(number)s? ' +
+              'Once saved, the "Plan" tab will disappear from this location\'s page, the zone number ' +
+              'will reappear on the plan instead of its name, and the devices/racks placed in this zone ' +
+              'will be removed from it (they will remain in their NetBox location, but will no longer be placed on the plan).'
             ),
             { location_name: zone.location_name || '', number: zone.number },
             true
@@ -1951,14 +1951,14 @@
 
     canvas.onZoneSelected(function (zone) {
       if (!zone) {
-        panel.innerHTML = `<p class="text-muted mb-0">${gettext("Cliquez sur une zone du plan pour l'associer à un local.")}</p>`;
+        panel.innerHTML = `<p class="text-muted mb-0">${gettext('Click a zone on the plan to associate it with a location.')}</p>`;
         return;
       }
-      panel.innerHTML = `<p class="text-muted mb-0">${gettext('Chargement des locaux…')}</p>`;
+      panel.innerHTML = `<p class="text-muted mb-0">${gettext('Loading locations…')}</p>`;
       fetchLocations()
         .then(function (locations) { renderPanel(zone, locations); })
         .catch(function () {
-          panel.innerHTML = `<p class="text-danger mb-0">${gettext('Erreur lors du chargement des locaux.')}</p>`;
+          panel.innerHTML = `<p class="text-danger mb-0">${gettext('Error loading locations.')}</p>`;
         });
     });
 

@@ -35,7 +35,7 @@
 
   <div class="col col-md-4">
     <div class="card mb-3">
-      <h5 class="card-header">{% trans "Objets à placer" %}</h5>
+      <h5 class="card-header">{% trans "Objects to place" %}</h5>
       <div class="card-body">
         <div id="np-pickable-panel"
              data-pickable-url="{% url 'plugins:netbox_cadplan:zone_pickable_objects' zone.pk %}"
@@ -44,25 +44,25 @@
     </div>
 
     <div class="card">
-      <h5 class="card-header">{% trans "Propriétés" %}</h5>
+      <h5 class="card-header">{% trans "Properties" %}</h5>
       <div class="card-body" id="np-properties-panel">
-        <p class="text-muted mb-0">{% trans "Cliquez sur un objet placé sur le plan pour voir ses propriétés." %}</p>
+        <p class="text-muted mb-0">{% trans "Click an object placed on the plan to view its properties." %}</p>
       </div>
     </div>
   </div>
 </div>
 
-<link rel="stylesheet" href="{% static 'netbox_cadplan/css/plan.css' %}?v=72">
+<link rel="stylesheet" href="{% static 'netbox_cadplan/css/plan.css' %}?v=74">
 <script src="https://unpkg.com/konva@9/konva.min.js"></script>
 <script src="{% url 'plugins:netbox_cadplan:javascript-catalog' %}"></script>
-<script src="{% static 'netbox_cadplan/js/plan_editor.js' %}?v=72"></script>
+<script src="{% static 'netbox_cadplan/js/plan_editor.js' %}?v=74"></script>
 {% else %}
 <div class="row">
   <div class="col col-md-12">
     <div class="card">
-      <h5 class="card-header">{% trans "Plan du local" %}</h5>
+      <h5 class="card-header">{% trans "Location plan" %}</h5>
       <div class="card-body">
-        <p class="text-muted mb-0">{% trans "Aucune zone de plan n'est associée à ce local." %}</p>
+        <p class="text-muted mb-0">{% trans "No plan zone is associated with this location." %}</p>
       </div>
     </div>
   </div>

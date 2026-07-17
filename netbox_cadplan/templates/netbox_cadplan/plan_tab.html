@@ -4,7 +4,7 @@
 {% block extra_controls %}
   {% if plan.dxf_file and plan.selected_layer %}
     <a href="{% url 'plugins:netbox_cadplan:plan_export_dxf' plan.pk %}" class="btn btn-outline-secondary">
-      <i class="mdi mdi-download" aria-hidden="true"></i> {% trans "Exporter en DXF" %}
+      <i class="mdi mdi-download" aria-hidden="true"></i> {% trans "Export as DXF" %}
     </a>
   {% endif %}
 {% endblock %}
@@ -16,7 +16,7 @@
     <div class="card">
       <h5 class="card-header">{% trans "Plan" %}</h5>
       <div class="card-body">
-        <p class="text-muted mb-0">{% trans "Aucun plan n'est associé." %}</p>
+        <p class="text-muted mb-0">{% trans "No plan is associated." %}</p>
       </div>
     </div>
   </div>
@@ -46,21 +46,21 @@
 
   <div class="col col-md-4">
     <div class="card mb-3">
-      <h5 class="card-header">{% trans "Associer un local" %}</h5>
+      <h5 class="card-header">{% trans "Associate a location" %}</h5>
       <div class="card-body">
         <div id="np-association-panel"
              data-locations-api-url="{% url 'plugins:netbox_cadplan:plan_locations' plan.pk %}"
              data-save-url="{% url 'plugins:netbox_cadplan:plan_save_associations' plan.pk %}">
-          <p class="text-muted mb-0">{% trans "Cliquez sur une zone du plan pour l'associer à un local." %}</p>
+          <p class="text-muted mb-0">{% trans "Click a zone on the plan to associate it with a location." %}</p>
         </div>
-        <button type="button" id="np-save-associations-btn" class="btn btn-primary mt-3">{% trans "Enregistrer" %}</button>
+        <button type="button" id="np-save-associations-btn" class="btn btn-primary mt-3">{% trans "Save" %}</button>
         <div id="np-save-feedback" class="mt-2"></div>
       </div>
     </div>
     <div class="card">
-      <h5 class="card-header">{% trans "Propriétés" %}</h5>
+      <h5 class="card-header">{% trans "Properties" %}</h5>
       <div class="card-body" id="np-properties-panel">
-        <p class="text-muted mb-0">{% trans "Cliquez sur un objet placé sur le plan pour voir ses propriétés." %}</p>
+        <p class="text-muted mb-0">{% trans "Click an object placed on the plan to view its properties." %}</p>
       </div>
     </div>
   </div>
@@ -69,7 +69,7 @@
 <div class="row mt-3">
   <div class="col col-md-12">
     <div class="card">
-      <h5 class="card-header">{% trans "Objets à placer" %}</h5>
+      <h5 class="card-header">{% trans "Objects to place" %}</h5>
       <div class="card-body">
         <div id="np-pickable-panel"
              data-pickable-url="{% url 'plugins:netbox_cadplan:plan_pickable_objects' plan.pk %}"
@@ -79,17 +79,17 @@
   </div>
 </div>
 
-<link rel="stylesheet" href="{% static 'netbox_cadplan/css/plan.css' %}?v=72">
+<link rel="stylesheet" href="{% static 'netbox_cadplan/css/plan.css' %}?v=74">
 <script src="https://unpkg.com/konva@9/konva.min.js"></script>
 <script src="{% url 'plugins:netbox_cadplan:javascript-catalog' %}"></script>
-<script src="{% static 'netbox_cadplan/js/plan_editor.js' %}?v=72"></script>
+<script src="{% static 'netbox_cadplan/js/plan_editor.js' %}?v=74"></script>
 {% else %}
 <div class="row">
   <div class="col col-md-12">
     <div class="card">
       <h5 class="card-header">{% trans "Plan" %}</h5>
       <div class="card-body">
-        <p class="text-muted mb-0">{% trans "Ce plan n'a pas encore de zones générées." %}</p>
+        <p class="text-muted mb-0">{% trans "This plan does not have any generated zones yet." %}</p>
       </div>
     </div>
   </div>
