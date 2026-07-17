@@ -403,7 +403,7 @@ def plan_layers(request, pk):
         return HttpResponseForbidden()
     if not plan.dxf_file:
         return JsonResponse(
-            {"error": _("Aucun fichier DXF n'est associé à ce plan.")}, status=400
+            {"error": _("No DXF file is associated with this plan.")}, status=400
         )
     try:
         layers = get_dxf_layers(plan.dxf_file.path)
@@ -429,11 +429,11 @@ def plan_layer_preview(request, pk):
         return HttpResponseForbidden()
     if not plan.dxf_file:
         return JsonResponse(
-            {"error": _("Aucun fichier DXF n'est associé à ce plan.")}, status=400
+            {"error": _("No DXF file is associated with this plan.")}, status=400
         )
     layer_name = (request.GET.get("layer") or "").strip()
     if not layer_name:
-        return JsonResponse({"error": _("Le paramètre layer est requis.")}, status=400)
+        return JsonResponse({"error": _("The layer parameter is required.")}, status=400)
     try:
         strokes = get_layer_geometry(plan.dxf_file.path, layer_name)
     except DxfReadError as exc:
@@ -493,7 +493,7 @@ def _layer_name_and_polygons_from_request(plan, request):
             None,
             None,
             JsonResponse(
-                {"error": _("Aucun fichier DXF n'est associé à ce plan.")}, status=400
+                {"error": _("No DXF file is associated with this plan.")}, status=400
             ),
         )
     try:
@@ -502,14 +502,14 @@ def _layer_name_and_polygons_from_request(plan, request):
         return (
             None,
             None,
-            JsonResponse({"error": _("Corps de requête JSON invalide.")}, status=400),
+            JsonResponse({"error": _("Invalid JSON request body.")}, status=400),
         )
     layer_name = (data.get("layer_name") or "").strip()
     if not layer_name:
         return (
             None,
             None,
-            JsonResponse({"error": _("layer_name est requis.")}, status=400),
+            JsonResponse({"error": _("layer_name is required.")}, status=400),
         )
 
     try:
@@ -524,8 +524,8 @@ def _layer_name_and_polygons_from_request(plan, request):
             JsonResponse(
                 {
                     "error": _(
-                        "Aucune délimitation fermée trouvée sur le calque "
-                        "« %(layer_name)s »."
+                        "No closed boundary found on layer "
+                        "“%(layer_name)s”."
                     )
                     % {"layer_name": layer_name}
                 },
@@ -675,7 +675,7 @@ def plan_save_associations(request, pk):
     try:
         data = json.loads(request.body)
     except (json.JSONDecodeError, UnicodeDecodeError):
-        return JsonResponse({"error": _("Corps de requête JSON invalide.")}, status=400)
+        return JsonResponse({"error": _("Invalid JSON request body.")}, status=400)
 
     associations = data.get("associations") or []
     zones_by_number = {z.number: z for z in plan.zones.all()}
@@ -686,12 +686,12 @@ def plan_save_associations(request, pk):
         try:
             zone_number = int(assoc["zone_number"])
         except (KeyError, TypeError, ValueError):
-            errors.append(_("Entrée invalide (zone_number manquant)."))
+            errors.append(_("Invalid entry (missing zone_number)."))
             continue
         zone = zones_by_number.get(zone_number)
         if zone is None:
             errors.append(
-                _("Zone %(zone_number)s introuvable pour ce plan.")
+                _("Zone %(zone_number)s not found for this plan.")
                 % {"zone_number": zone_number}
             )
             continue
@@ -713,13 +713,13 @@ def plan_save_associations(request, pk):
                 location = Location.objects.get(pk=location_id)
             except (Location.DoesNotExist, ValueError, TypeError):
                 errors.append(
-                    _("Location %(location_id)s invalide pour la zone %(zone_number)s.")
+                    _("Location %(location_id)s is invalid for zone %(zone_number)s.")
                     % {"location_id": location_id, "zone_number": zone_number}
                 )
                 continue
             if not _location_is_valid_for_plan(location, plan):
                 errors.append(
-                    _("Location %(location_id)s invalide pour la zone %(zone_number)s.")
+                    _("Location %(location_id)s is invalid for zone %(zone_number)s.")
                     % {"location_id": location_id, "zone_number": zone_number}
                 )
                 continue
@@ -729,7 +729,7 @@ def plan_save_associations(request, pk):
             if other:
                 errors.append(
                     _(
-                        "Location %(location_id)s déjà associée à la zone "
+                        "Location %(location_id)s is already associated with zone "
                         "%(other_number)s."
                     )
                     % {"location_id": location_id, "other_number": other.number}
@@ -835,8 +835,8 @@ def plan_export_dxf(request, pk):
         return JsonResponse(
             {
                 "error": _(
-                    "Ce plan n'a pas de fichier DXF avec un calque de "
-                    "zones sélectionné."
+                    "This plan has no DXF file with a selected zones "
+                    "layer."
                 )
             },
             status=400,
@@ -909,7 +909,7 @@ def place_object(request, zone_pk):
     try:
         data = json.loads(request.body)
     except (json.JSONDecodeError, UnicodeDecodeError):
-        return JsonResponse({"error": _("Corps de requête JSON invalide.")}, status=400)
+        return JsonResponse({"error": _("Invalid JSON request body.")}, status=400)
 
     object_type_label = (data.get("object_type") or "").strip()
     object_id = data.get("object_id")
@@ -920,36 +920,36 @@ def place_object(request, zone_pk):
         return JsonResponse(
             {
                 "error": _(
-                    "object_type invalide (attendu 'dcim.device' ou 'dcim.rack')."
+                    "Invalid object_type (expected 'dcim.device' or 'dcim.rack')."
                 )
             },
             status=400,
         )
     if model_name not in ("device", "rack"):
         return JsonResponse(
-            {"error": _("Seuls les devices et les racks peuvent être placés.")},
+            {"error": _("Only devices and racks can be placed.")},
             status=400,
         )
 
     obj = get_object_or_404(content_type.model_class(), pk=object_id)
     if obj.location_id != zone.location_id:
         return JsonResponse(
-            {"error": _("Cet objet n'appartient pas au local associé à cette zone.")},
+            {"error": _("This object does not belong to the location associated with this zone.")},
             status=400,
         )
     if _resolve_shape_mm(obj) is None:
         return JsonResponse(
             {
                 "error": _(
-                    "Aucune forme configurée pour cet objet (DeviceType "
-                    "sans Plan, ou Rack sans dimensions outer)."
+                    "No shape configured for this object (DeviceType "
+                    "without a Shape, or Rack without outer dimensions)."
                 )
             },
             status=400,
         )
     if PlacedObject.objects.filter(object_type=content_type, object_id=obj.pk).exists():
         return JsonResponse(
-            {"error": _("Cet objet est déjà placé sur un plan.")}, status=400
+            {"error": _("This object is already placed on a plan.")}, status=400
         )
 
     min_x, min_y, max_x, max_y = _polygon_bbox(zone.polygon_data)
@@ -980,7 +980,7 @@ def update_placed_object(request, pk):
     try:
         data = json.loads(request.body)
     except (json.JSONDecodeError, UnicodeDecodeError):
-        return JsonResponse({"error": _("Corps de requête JSON invalide.")}, status=400)
+        return JsonResponse({"error": _("Invalid JSON request body.")}, status=400)
 
     for field in ("x", "y", "rotation"):
         if field in data:
@@ -988,7 +988,7 @@ def update_placed_object(request, pk):
                 setattr(placed, field, float(data[field]))
             except (TypeError, ValueError):
                 return JsonResponse(
-                    {"error": _("%(field)s doit être numérique.") % {"field": field}},
+                    {"error": _("%(field)s must be numeric.") % {"field": field}},
                     status=400,
                 )
     if "snap_to_wall" in data:
@@ -1002,7 +1002,7 @@ def update_placed_object(request, pk):
     if "name_position" in data:
         name_position = data["name_position"]
         if name_position not in dict(NamePositionChoices.CHOICES):
-            return JsonResponse({"error": _("name_position invalide.")}, status=400)
+            return JsonResponse({"error": _("Invalid name_position.")}, status=400)
         placed.name_position = name_position
 
     placed.full_clean()

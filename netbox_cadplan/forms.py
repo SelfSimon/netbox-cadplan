@@ -13,7 +13,7 @@ MAX_DXF_UPLOAD_SIZE = 50 * 1024 * 1024  # 50 Mo
 def _validate_dxf_size(dxf_file):
     if dxf_file and dxf_file.size > MAX_DXF_UPLOAD_SIZE:
         raise ValidationError(
-            _("Le fichier DXF/DWG dépasse la taille maximale autorisée (50 Mo).")
+            _("The DXF/DWG file exceeds the maximum allowed size (50 MB).")
         )
     return dxf_file
 
@@ -28,7 +28,7 @@ class PlanForm(NetBoxModelForm):
         required=False,
         query_params={"site_id": "$site"},
         help_text=_(
-            "Local NetBox optionnel (laisser vide pour un plan couvrant tout le site)"
+            "Optional NetBox Location (leave empty for a plan covering the whole site)"
         ),
     )
 
@@ -48,7 +48,7 @@ class PlanForm(NetBoxModelForm):
         location = cleaned_data.get("location")
         if site and location and location.site_id != site.id:
             self.add_error(
-                "location", _("Le local sélectionné n'appartient pas au site choisi.")
+                "location", _("The selected location does not belong to the chosen site.")
             )
         return cleaned_data
 
@@ -60,7 +60,7 @@ class ReimportDxfForm(NetBoxModelForm):
     réapparaître le panneau de sélection de calque (cf. PlanReimportDxfView).
     """
 
-    fieldsets = (FieldSet("dxf_file", name=_("Réimporter un DXF")),)
+    fieldsets = (FieldSet("dxf_file", name=_("Reimport a DXF")),)
 
     class Meta:
         model = Plan
@@ -82,7 +82,7 @@ class DeviceTypeShapeForm(NetBoxModelForm):
         FieldSet(
             "shape",
             InlineFields("width", "depth", "diameter", "unit", label=_("Dimensions")),
-            name=_("Forme"),
+            name=_("Shape"),
         ),
     )
 

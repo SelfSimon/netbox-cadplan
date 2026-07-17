@@ -11,7 +11,7 @@ from .choices import LengthUnitChoices, NamePositionChoices, ShapeChoices
 
 
 class Plan(NetBoxModel):
-    name = models.CharField(_("nom"), max_length=100)
+    name = models.CharField(_("name"), max_length=100)
     site = models.ForeignKey(
         verbose_name=_("site"),
         to="dcim.Site",
@@ -19,16 +19,16 @@ class Plan(NetBoxModel):
         related_name="plans",
     )
     location = models.ForeignKey(
-        verbose_name=_("local"),
+        verbose_name=_("location"),
         to="dcim.Location",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="plans",
     )
-    dxf_file = models.FileField(_("fichier DXF"), upload_to="plans/dxf/")
+    dxf_file = models.FileField(_("DXF file"), upload_to="plans/dxf/")
     selected_layer = models.CharField(
-        _("calque sélectionné"), max_length=200, blank=True
+        _("selected layer"), max_length=200, blank=True
     )
     width_px = models.PositiveIntegerField(default=1200)
     height_px = models.PositiveIntegerField(default=800)
@@ -62,7 +62,7 @@ class Plan(NetBoxModel):
                 raise ValidationError(
                     {
                         "location": _(
-                            "Le local sélectionné n'appartient pas au site choisi."
+                            "The selected location does not belong to the chosen site."
                         )
                     }
                 )
@@ -76,8 +76,8 @@ class Plan(NetBoxModel):
                 raise ValidationError(
                     {
                         "location": _(
-                            "Un plan couvrant tout le site existe déjà pour ce site ; "
-                            "impossible de créer un plan de local."
+                            "A plan covering the whole site already exists for this "
+                            "site; a location plan cannot be created."
                         )
                     }
                 )
@@ -93,8 +93,8 @@ class Plan(NetBoxModel):
                 raise ValidationError(
                     {
                         "site": _(
-                            "Un plan sans local (couvrant tout le site) existe "
-                            "déjà pour ce site."
+                            "A plan without a location (covering the whole site) "
+                            "already exists for this site."
                         )
                     }
                 )
@@ -108,8 +108,8 @@ class Plan(NetBoxModel):
                 raise ValidationError(
                     {
                         "site": _(
-                            "Des plans de local existent déjà pour ce site ; "
-                            "impossible de créer un plan couvrant tout le site."
+                            "Location plans already exist for this site; a site-wide "
+                            "plan cannot be created."
                         )
                     }
                 )
@@ -174,16 +174,16 @@ class DeviceTypeShape(NetBoxModel):
         max_length=20, choices=ShapeChoices, default=ShapeChoices.RECTANGLE
     )
     width = models.DecimalField(
-        _("largeur"), max_digits=8, decimal_places=2, null=True, blank=True
+        _("width"), max_digits=8, decimal_places=2, null=True, blank=True
     )
     depth = models.DecimalField(
-        _("profondeur"), max_digits=8, decimal_places=2, null=True, blank=True
+        _("depth"), max_digits=8, decimal_places=2, null=True, blank=True
     )
     diameter = models.DecimalField(
-        _("diamètre"), max_digits=8, decimal_places=2, null=True, blank=True
+        _("diameter"), max_digits=8, decimal_places=2, null=True, blank=True
     )
     unit = models.CharField(
-        _("unité"),
+        _("unit"),
         max_length=10,
         choices=LengthUnitChoices,
         default=LengthUnitChoices.UNIT_CENTIMETER,
@@ -203,11 +203,11 @@ class DeviceTypeShape(NetBoxModel):
         if self.shape == ShapeChoices.RECTANGLE:
             if self.width is None or self.depth is None:
                 raise ValidationError(
-                    _("La largeur et la profondeur sont requises pour un rectangle.")
+                    _("Width and depth are required for a rectangle.")
                 )
         elif self.shape == ShapeChoices.CIRCLE:
             if self.diameter is None:
-                raise ValidationError(_("Le diamètre est requis pour un cercle."))
+                raise ValidationError(_("Diameter is required for a circle."))
 
 
 class PlacedObject(NetBoxModel):

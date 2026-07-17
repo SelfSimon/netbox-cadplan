@@ -4,7 +4,7 @@ from netbox.plugins import PluginMenu, PluginMenuButton, PluginMenuItem
 plan_buttons = (
     PluginMenuButton(
         link="plugins:netbox_cadplan:plan_add",
-        title=_("Ajouter un plan"),
+        title=_("Add a plan"),
         icon_class="mdi mdi-plus-thick",
         permissions=["netbox_cadplan.add_plan"],
     ),
@@ -19,7 +19,7 @@ menu = PluginMenu(
             (
                 PluginMenuItem(
                     link="plugins:netbox_cadplan:plan_list",
-                    link_text=_("Tous les plans"),
+                    link_text=_("All plans"),
                     buttons=plan_buttons,
                     permissions=["netbox_cadplan.view_plan"],
                 ),

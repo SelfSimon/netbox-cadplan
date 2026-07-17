@@ -9,7 +9,7 @@ class ShapeChoices(ChoiceSet):
 
     CHOICES = (
         (RECTANGLE, _("Rectangle")),
-        (CIRCLE, _("Cercle")),
+        (CIRCLE, _("Circle")),
     )
 
 
@@ -19,8 +19,8 @@ class LengthUnitChoices(ChoiceSet):
     UNIT_INCH = "in"
 
     CHOICES = (
-        (UNIT_CENTIMETER, _("Centimètres")),
-        (UNIT_INCH, _("Pouces")),
+        (UNIT_CENTIMETER, _("Centimeters")),
+        (UNIT_INCH, _("Inches")),
     )
 
 
@@ -33,9 +33,9 @@ class NamePositionChoices(ChoiceSet):
     CENTER = "center"
 
     CHOICES = (
-        (TOP, _("En haut")),
-        (BOTTOM, _("En bas")),
-        (LEFT, _("À gauche")),
-        (RIGHT, _("À droite")),
-        (CENTER, _("Au centre")),
+        (TOP, _("Top")),
+        (BOTTOM, _("Bottom")),
+        (LEFT, _("Left")),
+        (RIGHT, _("Right")),
+        (CENTER, _("Center")),
     )

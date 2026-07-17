@@ -44,16 +44,16 @@ def _convert_dwg_to_dxf(dwg_path):
         if result.returncode != 0:
             raise DxfReadError(
                 _(
-                    "Impossible de convertir le fichier DWG. "
-                    "Vérifiez que le fichier n'est pas corrompu ou d'une "
-                    "version trop récente."
+                    "Unable to convert the DWG file. "
+                    "Check that the file is not corrupted or in a "
+                    "version that is too recent."
                 )
             )
         ok = True
         return tmp_path
     except FileNotFoundError as exc:
         raise DxfReadError(
-            _("Le support des fichiers DWG n'est pas disponible sur ce serveur.")
+            _("DWG file support is not available on this server.")
         ) from exc
     finally:
         if not ok:
