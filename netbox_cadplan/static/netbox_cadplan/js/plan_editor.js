@@ -1941,12 +1941,18 @@
     let positionTool = null; // affecté plus bas (cf. initPositionTool) ; lu par closure
 
     let selectedGroup = null;
-    function selectObjectGroup(group) {
-      if (selectedGroup === group) return;
-      if (selectedGroup) setGroupSelected(selectedGroup, false);
-      selectedGroup = group;
-      if (selectedGroup) setGroupSelected(selectedGroup, true);
-      if (onObjectSelect) onObjectSelect(selectedGroup);
+    // `forceRefresh` : la rotation par clic droit modifie group.placedData.rotation d'un
+    // objet potentiellement déjà sélectionné (selectedGroup === group), donc sans ce
+    // paramètre le court-circuit "pas de changement de sélection" ci-dessous empêcherait
+    // le panneau Propriétés de se redessiner avec le nouvel angle.
+    function selectObjectGroup(group, forceRefresh) {
+      const changed = selectedGroup !== group;
+      if (changed) {
+        if (selectedGroup) setGroupSelected(selectedGroup, false);
+        selectedGroup = group;
+        if (selectedGroup) setGroupSelected(selectedGroup, true);
+      }
+      if ((changed || forceRefresh) && onObjectSelect) onObjectSelect(selectedGroup);
     }
 
     // Un clic qui n'atteint aucune forme (device/rack, zone...) touche directement le
@@ -2006,7 +2012,7 @@
       attachRightClickRotate(group, function () { return zonePolygon(obj.zone_number); }, function () {
         obj.rotation = group.shapeNode.rotation();
         persistPlacedObject(urlFor(updateUrlTemplate, obj.id), obj, { rotation: obj.rotation });
-        selectObjectGroup(group);
+        selectObjectGroup(group, true);
       });
       objectsLayer.add(group);
       objectGroups[obj.id] = group;
@@ -2667,12 +2673,18 @@
     const getLocalPolygon = function () { return localPolygon; };
 
     let selectedGroup = null;
-    function selectObjectGroup(group) {
-      if (selectedGroup === group) return;
-      if (selectedGroup) setGroupSelected(selectedGroup, false);
-      selectedGroup = group;
-      if (selectedGroup) setGroupSelected(selectedGroup, true);
-      if (onObjectSelect) onObjectSelect(selectedGroup);
+    // `forceRefresh` : la rotation par clic droit modifie group.placedData.rotation d'un
+    // objet potentiellement déjà sélectionné (selectedGroup === group), donc sans ce
+    // paramètre le court-circuit "pas de changement de sélection" ci-dessous empêcherait
+    // le panneau Propriétés de se redessiner avec le nouvel angle.
+    function selectObjectGroup(group, forceRefresh) {
+      const changed = selectedGroup !== group;
+      if (changed) {
+        if (selectedGroup) setGroupSelected(selectedGroup, false);
+        selectedGroup = group;
+        if (selectedGroup) setGroupSelected(selectedGroup, true);
+      }
+      if ((changed || forceRefresh) && onObjectSelect) onObjectSelect(selectedGroup);
     }
 
     stage.on('click tap', function (e) {
@@ -2718,7 +2730,7 @@
       attachRightClickRotate(group, getLocalPolygon, function () {
         obj.rotation = group.shapeNode.rotation();
         persistPlacedObject(urlFor(updateUrlTemplate, obj.id), obj, { rotation: obj.rotation });
-        selectObjectGroup(group);
+        selectObjectGroup(group, true);
       });
       objectsLayer.add(group);
       objectGroups[obj.id] = group;
