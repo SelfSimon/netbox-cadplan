@@ -1,0 +1,392 @@
+# French translations for the netbox_plan plugin (identity : la langue source est le français).
+# This file is distributed under the same license as the netbox_plan package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: netbox_plan 0.1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-30 15:32+0000\n"
+"PO-Revision-Date: 2026-06-30 15:32+0000\n"
+"Last-Translator: \n"
+"Language-Team: French\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: choices.py:12
+msgid "Rectangle"
+msgstr "Rectangle"
+
+#: choices.py:13
+msgid "Cercle"
+msgstr "Cercle"
+
+#: choices.py:23
+msgid "Centimètres"
+msgstr "Centimètres"
+
+#: choices.py:24
+msgid "Pouces"
+msgstr "Pouces"
+
+#: choices.py:37
+msgid "En haut"
+msgstr "En haut"
+
+#: choices.py:38
+msgid "En bas"
+msgstr "En bas"
+
+#: choices.py:39
+msgid "À gauche"
+msgstr "À gauche"
+
+#: choices.py:40
+msgid "À droite"
+msgstr "À droite"
+
+#: choices.py:41
+msgid "Au centre"
+msgstr "Au centre"
+
+#: forms.py:24
+msgid ""
+"Local NetBox optionnel (laisser vide pour un plan couvrant tout le site)"
+msgstr ""
+"Local NetBox optionnel (laisser vide pour un plan couvrant tout le site)"
+
+#: forms.py:28 templates/netbox_plan/location_tab.html:12
+#: templates/netbox_plan/plan.html:16 templates/netbox_plan/plan_tab.html:17
+#: templates/netbox_plan/plan_tab.html:88
+msgid "Plan"
+msgstr "Plan"
+
+#: forms.py:38
+msgid "Le fichier DXF/DWG dépasse la taille maximale autorisée (50 Mo)."
+msgstr "Le fichier DXF/DWG dépasse la taille maximale autorisée (50 Mo)."
+
+#: forms.py:46 models.py:57
+msgid "Le local sélectionné n'appartient pas au site choisi."
+msgstr "Le local sélectionné n'appartient pas au site choisi."
+
+#: forms.py:54
+msgid "Dimensions"
+msgstr "Dimensions"
+
+#: forms.py:55 templates/netbox_plan/inc/devicetype_plan_shape_panel.html:8
+msgid "Forme"
+msgstr "Forme"
+
+#: models.py:15
+msgid "nom"
+msgstr "nom"
+
+#: models.py:17
+msgid "site"
+msgstr "site"
+
+#: models.py:23
+msgid "local"
+msgstr "local"
+
+#: models.py:29
+msgid "fichier DXF"
+msgstr "fichier DXF"
+
+#: models.py:30
+msgid "calque sélectionné"
+msgstr "calque sélectionné"
+
+#: models.py:60
+msgid ""
+"Un plan couvrant tout le site existe déjà pour ce site ; impossible de créer "
+"un plan de local."
+msgstr ""
+"Un plan couvrant tout le site existe déjà pour ce site ; impossible de créer "
+"un plan de local."
+
+#: models.py:65
+msgid "Un plan sans local (couvrant tout le site) existe déjà pour ce site."
+msgstr "Un plan sans local (couvrant tout le site) existe déjà pour ce site."
+
+#: models.py:68
+msgid ""
+"Des plans de local existent déjà pour ce site ; impossible de créer un plan "
+"couvrant tout le site."
+msgstr ""
+"Des plans de local existent déjà pour ce site ; impossible de créer un plan "
+"couvrant tout le site."
+
+#: models.py:116
+msgid "largeur"
+msgstr "largeur"
+
+#: models.py:117
+msgid "profondeur"
+msgstr "profondeur"
+
+#: models.py:118
+msgid "diamètre"
+msgstr "diamètre"
+
+#: models.py:120
+msgid "unité"
+msgstr "unité"
+
+#: models.py:137
+msgid "La largeur et la profondeur sont requises pour un rectangle."
+msgstr "La largeur et la profondeur sont requises pour un rectangle."
+
+#: models.py:142
+msgid "Le diamètre est requis pour un cercle."
+msgstr "Le diamètre est requis pour un cercle."
+
+#: navigation.py:8
+msgid "Ajouter un plan"
+msgstr "Ajouter un plan"
+
+#: navigation.py:18
+msgid "Plans"
+msgstr "Plans"
+
+#: navigation.py:21
+msgid "Tous les plans"
+msgstr "Tous les plans"
+
+#: templates/netbox_plan/inc/devicetype_plan_shape_panel.html:3
+msgid "Forme sur le plan"
+msgstr "Forme sur le plan"
+
+#: templates/netbox_plan/inc/devicetype_plan_shape_panel.html:13
+msgid "Largeur"
+msgstr "Largeur"
+
+#: templates/netbox_plan/inc/devicetype_plan_shape_panel.html:17
+msgid "Profondeur"
+msgstr "Profondeur"
+
+#: templates/netbox_plan/inc/devicetype_plan_shape_panel.html:22
+msgid "Diamètre"
+msgstr "Diamètre"
+
+#: templates/netbox_plan/inc/devicetype_plan_shape_panel.html:28
+msgid ""
+"Aucune forme n'est configurée pour ce type de matériel. Les devices de ce "
+"type ne peuvent pas être placés sur un plan."
+msgstr ""
+"Aucune forme n'est configurée pour ce type de matériel. Les devices de ce "
+"type ne peuvent pas être placés sur un plan."
+
+#: templates/netbox_plan/inc/devicetype_plan_shape_panel.html:31
+msgid "Modifier la forme"
+msgstr "Modifier la forme"
+
+#: templates/netbox_plan/inc/devicetype_plan_shape_panel.html:31
+msgid "Configurer la forme"
+msgstr "Configurer la forme"
+
+#: templates/netbox_plan/location_tab.html:9
+#, python-format
+msgid "Plan du local — zone %(number)s"
+msgstr "Plan du local — zone %(number)s"
+
+#: templates/netbox_plan/location_tab.html:31
+#: templates/netbox_plan/plan.html:123 templates/netbox_plan/plan_tab.html:61
+msgid "Objets à placer"
+msgstr "Objets à placer"
+
+#: templates/netbox_plan/location_tab.html:40
+#: templates/netbox_plan/plan.html:134 templates/netbox_plan/plan_tab.html:72
+msgid "Propriétés"
+msgstr "Propriétés"
+
+#: templates/netbox_plan/location_tab.html:42
+#: templates/netbox_plan/plan.html:136 templates/netbox_plan/plan_tab.html:74
+msgid "Cliquez sur un objet placé sur le plan pour voir ses propriétés."
+msgstr "Cliquez sur un objet placé sur le plan pour voir ses propriétés."
+
+#: templates/netbox_plan/location_tab.html:56
+msgid "Plan du local"
+msgstr "Plan du local"
+
+#: templates/netbox_plan/location_tab.html:58
+msgid "Aucune zone de plan n'est associée à ce local."
+msgstr "Aucune zone de plan n'est associée à ce local."
+
+#: templates/netbox_plan/plan.html:7 templates/netbox_plan/plan_tab.html:7
+msgid "Exporter en DXF"
+msgstr "Exporter en DXF"
+
+#: templates/netbox_plan/plan.html:20
+msgid "Nom"
+msgstr "Nom"
+
+#: templates/netbox_plan/plan.html:24
+msgid "Site"
+msgstr "Site"
+
+#: templates/netbox_plan/plan.html:28
+msgid "Location"
+msgstr "Location"
+
+#: templates/netbox_plan/plan.html:32
+msgid "Fichier DXF"
+msgstr "Fichier DXF"
+
+#: templates/netbox_plan/plan.html:42
+msgid "Calque sélectionné"
+msgstr "Calque sélectionné"
+
+#: templates/netbox_plan/plan.html:46
+msgid "Zones"
+msgstr "Zones"
+
+#: templates/netbox_plan/plan.html:59
+msgid "Sélection du calque"
+msgstr "Sélection du calque"
+
+#: templates/netbox_plan/plan.html:61
+msgid ""
+"Cliquez sur un calque pour en prévisualiser le contenu, puis confirmez celui "
+"qui contient les délimitations des locaux."
+msgstr ""
+"Cliquez sur un calque pour en prévisualiser le contenu, puis confirmez celui "
+"qui contient les délimitations des locaux."
+
+#: templates/netbox_plan/plan.html:71
+msgid "Aperçu du calque"
+msgstr "Aperçu du calque"
+
+#: templates/netbox_plan/plan.html:78
+msgid "Sélectionnez un calque à gauche pour afficher son aperçu."
+msgstr "Sélectionnez un calque à gauche pour afficher son aperçu."
+
+#: templates/netbox_plan/plan.html:90 templates/netbox_plan/plan_tab.html:28
+#, python-format
+msgid "Plan (%(layer)s)"
+msgstr "Plan (%(layer)s)"
+
+#: templates/netbox_plan/plan.html:106 templates/netbox_plan/plan_tab.html:44
+msgid "Associer un local"
+msgstr "Associer un local"
+
+#: templates/netbox_plan/plan.html:111 templates/netbox_plan/plan_tab.html:49
+msgid "Cliquez sur une zone du plan pour l'associer à un local."
+msgstr "Cliquez sur une zone du plan pour l'associer à un local."
+
+#: templates/netbox_plan/plan.html:113 templates/netbox_plan/plan_tab.html:51
+msgid "Enregistrer"
+msgstr "Enregistrer"
+
+#: templates/netbox_plan/plan_tab.html:19
+msgid "Aucun plan n'est associé."
+msgstr "Aucun plan n'est associé."
+
+#: templates/netbox_plan/plan_tab.html:90
+msgid "Ce plan n'a pas encore de zones générées."
+msgstr "Ce plan n'a pas encore de zones générées."
+
+#: utils.py:56
+msgid ""
+"Impossible de convertir le fichier DWG. "
+"Vérifiez que le fichier n'est pas corrompu ou d'une version trop récente."
+msgstr ""
+"Impossible de convertir le fichier DWG. "
+"Vérifiez que le fichier n'est pas corrompu ou d'une version trop récente."
+
+#: utils.py:60
+msgid "Le support des fichiers DWG n'est pas disponible sur ce serveur."
+msgstr "Le support des fichiers DWG n'est pas disponible sur ce serveur."
+
+#: utils.py:74
+msgid ""
+"Impossible de lire ce fichier. Vérifiez qu'il s'agit bien d'un fichier DXF ou DWG valide."
+msgstr ""
+"Impossible de lire ce fichier. Vérifiez qu'il s'agit bien d'un fichier DXF ou DWG valide."
+
+#: utils.py:78
+msgid "Le fichier n'a pas pu être ouvert."
+msgstr "Le fichier n'a pas pu être ouvert."
+
+#: views.py:306 views.py:330 views.py:388
+msgid "Aucun fichier DXF n'est associé à ce plan."
+msgstr "Aucun fichier DXF n'est associé à ce plan."
+
+#: views.py:333
+msgid "Le paramètre layer est requis."
+msgstr "Le paramètre layer est requis."
+
+#: views.py:392 views.py:437 views.py:625 views.py:668
+msgid "Corps de requête JSON invalide."
+msgstr "Corps de requête JSON invalide."
+
+#: views.py:395
+msgid "layer_name est requis."
+msgstr "layer_name est requis."
+
+#: views.py:404
+#, python-format
+msgid "Aucune délimitation fermée trouvée sur le calque « %(layer_name)s »."
+msgstr "Aucune délimitation fermée trouvée sur le calque « %(layer_name)s »."
+
+#: views.py:448
+msgid "Entrée invalide (zone_number manquant)."
+msgstr "Entrée invalide (zone_number manquant)."
+
+#: views.py:452
+#, python-format
+msgid "Zone %(zone_number)s introuvable pour ce plan."
+msgstr "Zone %(zone_number)s introuvable pour ce plan."
+
+#: views.py:470 views.py:476
+#, python-format
+msgid "Location %(location_id)s invalide pour la zone %(zone_number)s."
+msgstr "Location %(location_id)s invalide pour la zone %(zone_number)s."
+
+#: views.py:483
+#, python-format
+msgid "Location %(location_id)s déjà associée à la zone %(other_number)s."
+msgstr "Location %(location_id)s déjà associée à la zone %(other_number)s."
+
+#: views.py:574
+msgid "Ce plan n'a pas de fichier DXF avec un calque de zones sélectionné."
+msgstr "Ce plan n'a pas de fichier DXF avec un calque de zones sélectionné."
+
+#: views.py:633
+msgid "object_type invalide (attendu 'dcim.device' ou 'dcim.rack')."
+msgstr "object_type invalide (attendu 'dcim.device' ou 'dcim.rack')."
+
+#: views.py:635
+msgid "Seuls les devices et les racks peuvent être placés."
+msgstr "Seuls les devices et les racks peuvent être placés."
+
+#: views.py:639
+msgid "Cet objet n'appartient pas au local associé à cette zone."
+msgstr "Cet objet n'appartient pas au local associé à cette zone."
+
+#: views.py:641
+msgid ""
+"Aucune forme configurée pour cet objet (DeviceType sans Plan, ou Rack sans "
+"dimensions outer)."
+msgstr ""
+"Aucune forme configurée pour cet objet (DeviceType sans Plan, ou Rack sans "
+"dimensions outer)."
+
+#: views.py:643
+msgid "Cet objet est déjà placé sur un plan."
+msgstr "Cet objet est déjà placé sur un plan."
+
+#: views.py:675
+#, python-format
+msgid "%(field)s doit être numérique."
+msgstr "%(field)s doit être numérique."
+
+#: views.py:681
+msgid "name_position invalide."
+msgstr "name_position invalide."
+
+#: forms.py templates/netbox_plan/plan.html
+msgid "Réimporter un DXF"
+msgstr "Réimporter un DXF"

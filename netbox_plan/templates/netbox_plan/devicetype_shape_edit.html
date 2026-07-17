@@ -1,0 +1,38 @@
+{% extends 'generic/object_edit.html' %}
+
+{% block head %}
+  {{ block.super }}
+  <style>
+    /* Le gris "disabled" par défaut de Bootstrap est trop discret pour bien distinguer
+       visuellement les champs non pertinents pour la forme sélectionnée (rectangle/cercle). */
+    #id_width:disabled, #id_depth:disabled, #id_diameter:disabled {
+      background-color: #e1e9f0 !important;
+      opacity: 0.8;
+    }
+  </style>
+{% endblock %}
+
+{% block javascript %}
+  {{ block.super }}
+  <script>
+    (function () {
+      function refreshShapeFieldsAvailability() {
+        var shapeSelect = document.getElementById('id_shape');
+        var widthInput = document.getElementById('id_width');
+        var depthInput = document.getElementById('id_depth');
+        var diameterInput = document.getElementById('id_diameter');
+        if (!shapeSelect) return;
+        var isCircle = shapeSelect.value === 'circle';
+        [widthInput, depthInput].forEach(function (input) {
+          if (input) input.disabled = isCircle;
+        });
+        if (diameterInput) diameterInput.disabled = !isCircle;
+      }
+      document.addEventListener('DOMContentLoaded', function () {
+        var shapeSelect = document.getElementById('id_shape');
+        if (shapeSelect) shapeSelect.addEventListener('change', refreshShapeFieldsAvailability);
+        refreshShapeFieldsAvailability();
+      });
+    })();
+  </script>
+{% endblock %}

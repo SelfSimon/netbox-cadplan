@@ -1,0 +1,28 @@
+try:
+    from netbox.plugins import PluginConfig
+except Exception:
+    # Minimal fallback for local development / tests when NetBox is not
+    # available. This avoids import-time errors during pytest collection.
+    class PluginConfig:  # type: ignore
+        pass
+
+
+class NetBoxPlanConfig(PluginConfig):
+    name = "netbox_plan"
+    verbose_name = "NetBox Plan"
+    description = "Visual floor-plan management linked to Sites and Locations"
+    version = "0.1.0"
+    author = "Simon Lacroix"
+    author_email = "simonlacroix@live.ca"
+    base_url = "plan"
+    min_version = "4.6.0"
+    max_version = "4.6.99"
+    required_settings = []
+    default_settings = {}
+
+    def ready(self):
+        super().ready()
+        from . import signals  # noqa: F401
+
+
+config = NetBoxPlanConfig

@@ -1,0 +1,179 @@
+# English translations for the netbox_plan plugin (JavaScript strings).
+# This file is distributed under the same license as the netbox_plan package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: netbox_plan 0.1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-30 15:32+0000\n"
+"PO-Revision-Date: 2026-06-29 17:52+0000\n"
+"Last-Translator: \n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: static/netbox_plan/js/plan_editor.js:121
+msgid "Aucun calque trouvé dans ce fichier DXF."
+msgstr "No layer found in this DXF file."
+
+#: static/netbox_plan/js/plan_editor.js:131
+msgid "Confirmer ce calque"
+msgstr "Confirm this layer"
+
+#: static/netbox_plan/js/plan_editor.js:162
+msgid "Erreur réseau lors de la confirmation du calque."
+msgstr "Network error while confirming the layer."
+
+#: static/netbox_plan/js/plan_editor.js:170
+msgid "Lecture des calques du fichier DXF…"
+msgstr "Reading layers from the DXF file…"
+
+#: static/netbox_plan/js/plan_editor.js:177
+msgid "Erreur réseau lors de la lecture des calques."
+msgstr "Network error while reading layers."
+
+#: static/netbox_plan/js/plan_editor.js:190
+msgid "Chargement de l'aperçu…"
+msgstr "Loading preview…"
+
+#: static/netbox_plan/js/plan_editor.js:201
+msgid "Aucun élément trouvé sur ce calque."
+msgstr "No elements found on this layer."
+
+#: static/netbox_plan/js/plan_editor.js:205
+msgid "Konva.js n'a pas pu être chargé."
+msgstr "Konva.js could not be loaded."
+
+#: static/netbox_plan/js/plan_editor.js:237
+msgid "Erreur réseau lors de l'aperçu du calque."
+msgstr "Network error while previewing the layer."
+
+#: static/netbox_plan/js/plan_editor.js:245
+msgid "En haut"
+msgstr "Top"
+
+#: static/netbox_plan/js/plan_editor.js:245
+msgid "En bas"
+msgstr "Bottom"
+
+#: static/netbox_plan/js/plan_editor.js:245
+msgid "À gauche"
+msgstr "Left"
+
+#: static/netbox_plan/js/plan_editor.js:246
+msgid "À droite"
+msgstr "Right"
+
+#: static/netbox_plan/js/plan_editor.js:246
+msgid "Au centre"
+msgstr "Center"
+
+#: static/netbox_plan/js/plan_editor.js:784
+msgid "Placer"
+msgstr "Place"
+
+#: static/netbox_plan/js/plan_editor.js:815
+msgid "Forme non configurée"
+msgstr "Shape not configured"
+
+#: static/netbox_plan/js/plan_editor.js:827
+msgid "Racks"
+msgstr "Racks"
+
+#: static/netbox_plan/js/plan_editor.js:827
+msgid "Devices non rackés"
+msgstr "Non-racked devices"
+
+#: static/netbox_plan/js/plan_editor.js:849
+msgid "Aucun objet disponible."
+msgstr "No objects available."
+
+#: static/netbox_plan/js/plan_editor.js:881
+msgid "Cliquez sur un objet placé sur le plan pour voir ses propriétés."
+msgstr "Click on an object placed on the plan to see its properties."
+
+#: static/netbox_plan/js/plan_editor.js:907
+msgid "Rotation (°)"
+msgstr "Rotation (°)"
+
+#: static/netbox_plan/js/plan_editor.js:927
+msgid "Aimanter au mur"
+msgstr "Snap to wall"
+
+#: static/netbox_plan/js/plan_editor.js:935
+msgid "Hors des murs"
+msgstr "Outside walls"
+
+#: static/netbox_plan/js/plan_editor.js:942
+msgid "Position du nom"
+msgstr "Name position"
+
+#: static/netbox_plan/js/plan_editor.js:996
+msgid "Retirer du plan"
+msgstr "Remove from plan"
+
+#: static/netbox_plan/js/plan_editor.js:1231
+msgid "Zone %(number)s sélectionnée"
+msgstr "Zone %(number)s selected"
+
+#: static/netbox_plan/js/plan_editor.js:1239
+msgid "— Aucun local —"
+msgstr "— No location —"
+
+#: static/netbox_plan/js/plan_editor.js:1255
+msgid "Associer à la zone %(number)s"
+msgstr "Associate with zone %(number)s"
+
+#: static/netbox_plan/js/plan_editor.js:1262
+msgid ""
+"Voulez-vous vraiment délier le local « %(location_name)s » de la zone %"
+"(number)s ? Une fois enregistré, l'onglet \"Plan\" disparaîtra de la page de "
+"ce local, le numéro de zone réapparaîtra sur le plan à la place de son nom, "
+"et les devices/racks posés dans cette zone en seront retirés (ils resteront "
+"dans leur local NetBox, mais ne seront plus placés sur le plan)."
+msgstr ""
+"Do you really want to unlink location « %(location_name)s » from zone %"
+"(number)s? Once saved, the \"Plan\" tab will disappear from this location's "
+"page, the zone number will reappear on the plan in place of its name, and "
+"the devices/racks placed in this zone will be removed from it (they will "
+"remain in their NetBox location, but will no longer be placed on the plan)."
+
+#: static/netbox_plan/js/plan_editor.js:1283
+msgid "Cliquez sur une zone du plan pour l'associer à un local."
+msgstr "Click on a zone of the plan to associate it with a location."
+
+#: static/netbox_plan/js/plan_editor.js:1286
+msgid "Chargement des locaux…"
+msgstr "Loading locations…"
+
+#: static/netbox_plan/js/plan_editor.js:1290
+msgid "Erreur lors du chargement des locaux."
+msgstr "Error while loading locations."
+
+#: static/netbox_plan/js/plan_editor.js:1319
+msgid "%(saved)s association(s) enregistrée(s)."
+msgstr "%(saved)s association(s) saved."
+
+#: static/netbox_plan/js/plan_editor.js:1325
+msgid "Erreur réseau lors de l'enregistrement."
+msgstr "Network error while saving."
+
+#: static/netbox_plan/js/plan_editor.js:159
+msgid ""
+"%(unchanged)s zone(s) inchangée(s), %(removed)s zone(s) supprimée(s) "
+"(%(objects)s objet(s) posé(s) seront retirés), %(created)s nouvelle(s) "
+"zone(s)."
+msgstr ""
+"%(unchanged)s zone(s) unchanged, %(removed)s zone(s) removed "
+"(%(objects)s placed object(s) will be removed), %(created)s new zone(s)."
+
+#: static/netbox_plan/js/plan_editor.js:174
+msgid "Appliquer"
+msgstr "Apply"
+
+#: static/netbox_plan/js/plan_editor.js:181
+msgid "Annuler"
+msgstr "Cancel"

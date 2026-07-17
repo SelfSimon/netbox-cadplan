@@ -1,0 +1,66 @@
+{% extends 'generic/object.html' %}
+{% load helpers i18n static %}
+
+{% block content %}
+{% if zone %}
+<div class="row">
+  <div class="col col-md-8">
+    <div class="card">
+      <h5 class="card-header">{% blocktrans with number=zone.number %}Plan du local — zone {{ number }}{% endblocktrans %}</h5>
+      <div class="card-body p-0">
+        <p class="text-muted px-3 pt-3 mb-0">
+          {% trans "Plan" %} : <a href="{{ zone.plan.get_absolute_url }}">{{ zone.plan.name }}</a>
+        </p>
+        {{ objects|json_script:"np-loc-objects-data" }}
+        {{ polygon|json_script:"np-loc-polygon-data" }}
+        {{ inner_polygons|json_script:"np-loc-inner-polygons" }}
+        <div id="np-loc-canvas"
+             data-width="{{ width_px }}"
+             data-height="{{ height_px }}"
+             data-offset-x="{{ offset_x }}"
+             data-offset-y="{{ offset_y }}"
+             data-mm-per-px="{{ mm_per_px|default_if_none:'' }}"
+             data-plan-width="{{ zone.plan.width_px }}"
+             data-update-url-template="{% url 'plugins:netbox_plan:update_placed_object' 999999 %}"
+             data-remove-url-template="{% url 'plugins:netbox_plan:remove_placed_object' 999999 %}"
+             style="width:100%; max-height:700px; overflow:hidden; position:relative;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col col-md-4">
+    <div class="card mb-3">
+      <h5 class="card-header">{% trans "Objets à placer" %}</h5>
+      <div class="card-body">
+        <div id="np-pickable-panel"
+             data-pickable-url="{% url 'plugins:netbox_plan:zone_pickable_objects' zone.pk %}"
+             data-place-url="{% url 'plugins:netbox_plan:place_object' zone.pk %}"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h5 class="card-header">{% trans "Propriétés" %}</h5>
+      <div class="card-body" id="np-properties-panel">
+        <p class="text-muted mb-0">{% trans "Cliquez sur un objet placé sur le plan pour voir ses propriétés." %}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="{% static 'netbox_plan/css/plan.css' %}?v=72">
+<script src="https://unpkg.com/konva@9/konva.min.js"></script>
+<script src="{% url 'plugins:netbox_plan:javascript-catalog' %}"></script>
+<script src="{% static 'netbox_plan/js/plan_editor.js' %}?v=72"></script>
+{% else %}
+<div class="row">
+  <div class="col col-md-12">
+    <div class="card">
+      <h5 class="card-header">{% trans "Plan du local" %}</h5>
+      <div class="card-body">
+        <p class="text-muted mb-0">{% trans "Aucune zone de plan n'est associée à ce local." %}</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
