@@ -48,18 +48,51 @@
     };
   }
 
+  // "Vue générale" pour l'onglet Zone d'un local : contrairement à getFillStageSize
+  // (qui remplit uniquement la largeur, quitte à rogner le bas d'une pièce haute et
+  // étroite au-delà de maxHeight), ici le scale est borné à la fois par la largeur ET
+  // par maxHeight, afin que la pièce entière tienne toujours dans le canvas sans
+  // panning. marginRatio réduit ensuite légèrement ce scale (marge visuelle autour de
+  // la pièce) et le stage est repositionné (x/y) pour centrer la pièce dans l'espace
+  // ainsi libéré, sur les deux axes.
+  function getFitStageSize(container, dataWidth, dataHeight, maxHeight, marginRatio) {
+    const containerWidth = container.clientWidth || dataWidth;
+    const rawScale = dataWidth > 0 && dataHeight > 0
+      ? Math.min(containerWidth / dataWidth, maxHeight / dataHeight)
+      : 1;
+    const scale = rawScale * (1 - marginRatio);
+    const stageWidth = Math.round(containerWidth);
+    const stageHeight = Math.round(dataHeight * rawScale);
+    return {
+      width: stageWidth,
+      height: stageHeight,
+      scale: scale,
+      x: (stageWidth - dataWidth * scale) / 2,
+      y: (stageHeight - dataHeight * scale) / 2,
+    };
+  }
+
   // Zoom à la molette centré sur le curseur (recette standard Konva) : ajuste le scale
   // du stage par crans multiplicatifs, et compense la position pour que le point sous le
   // curseur reste fixe à l'écran pendant le zoom.
   const WHEEL_ZOOM_FACTOR = 1.08;
-  const WHEEL_ZOOM_MIN_SCALE = 0.05;
-  const WHEEL_ZOOM_MAX_SCALE = 20;
+  // Les coordonnées logiques (Plan.width_px/height_px, ou la bounding box d'une zone)
+  // n'ont pas d'échelle absolue commune d'un plan à l'autre — un scale "1" ne veut rien
+  // dire en soi. Des bornes absolues (ex. min 0.05 / max 20) coupaient donc le zoom
+  // prématurément dès qu'un plan démarrait déjà proche de l'une d'elles (ex. une petite
+  // zone dont le scale d'ajustement initial est déjà 4). On borne plutôt le zoom en
+  // facteur relatif au scale de départ de CE canvas, pour garantir la même plage de zoom
+  // utilisable partout.
+  const WHEEL_ZOOM_RANGE = 50;
 
   // `getGroups` (optionnel) retourne le dict {id -> Konva.Group} des objets posés au
   // moment de l'appel — pour réajuster leur texte/bordure à taille d'écran constante à
   // chaque cran de zoom (cf. rescaleObjectGroups). Un getter (et non le dict directement)
   // car ce dict est peuplé/modifié après l'appel à attachWheelZoom (placement, suppression).
   function attachWheelZoom(stage, getGroups) {
+    const baseScale = stage.scaleX() || 1;
+    const minScale = baseScale / WHEEL_ZOOM_RANGE;
+    const maxScale = baseScale * WHEEL_ZOOM_RANGE;
     stage.on('wheel', function (e) {
       e.evt.preventDefault();
       const oldScale = stage.scaleX();
@@ -71,7 +104,7 @@
       };
       const direction = e.evt.deltaY > 0 ? -1 : 1;
       let newScale = direction > 0 ? oldScale * WHEEL_ZOOM_FACTOR : oldScale / WHEEL_ZOOM_FACTOR;
-      newScale = Math.max(WHEEL_ZOOM_MIN_SCALE, Math.min(WHEEL_ZOOM_MAX_SCALE, newScale));
+      newScale = Math.max(minScale, Math.min(maxScale, newScale));
       stage.scale({ x: newScale, y: newScale });
       stage.position({
         x: pointer.x - mousePointTo.x * newScale,
@@ -105,8 +138,14 @@
     // dataWidth en fallback et crée un stage surdimensionné (rendu flou / recadré).
     requestAnimationFrame(function () {
       const canvas = initCanvas();
-      initAssociationPanel(canvas);
-      initPlacedObjectsUI(canvas);
+      const pickable = initPlacedObjectsUI(canvas);
+      initAssociationPanel(canvas, function () {
+        if (pickable) pickable.refresh();
+      });
+      const centerViewBtn = document.getElementById('np-center-view-btn');
+      if (centerViewBtn && canvas) {
+        centerViewBtn.addEventListener('click', function () { canvas.centerView(); });
+      }
     });
     initLocationCanvas();
     // Si l'onglet Zone n'est pas actif au chargement (clientWidth=0), réessayer dès que
@@ -1396,7 +1435,11 @@
     const updateUrlTemplate = container.dataset.updateUrlTemplate;
     const removeUrlTemplate = container.dataset.removeUrlTemplate;
 
-    const size = getResponsiveStageSize(container, width, height);
+    // getFitStageSize (pas getResponsiveStageSize/getFillStageSize) : un plan dont la
+    // taille logique est plus petite que la carte Bootstrap doit être agrandi pour remplir
+    // le conteneur, mais sans jamais dépasser maxHeight (sinon le bas du plan serait rogné
+    // hors-champ, cf. son commentaire) — et centré dans l'espace ainsi dégagé.
+    let size = getFitStageSize(container, width, height, height, 0.04);
     container.style.height = size.height + 'px';
     const stage = new Konva.Stage({
       container: 'np-canvas',
@@ -1404,13 +1447,15 @@
       height: size.height,
       scaleX: size.scale,
       scaleY: size.scale,
+      x: size.x,
+      y: size.y,
       pixelRatio: window.devicePixelRatio || 1,
     });
     attachWheelZoom(stage, function () { return objectGroups; });
     // Adapte la taille des étiquettes de zone au zoom courant : objectif BASE_ZONE_LABEL_PX
-    // pixels écran, plafonné à maxFontCanvas pour ne pas déborder de la zone.
-    stage.on('wheel', function () {
-      const scale = stage.scaleX();
+    // pixels écran, plafonné à maxFontCanvas pour ne pas déborder de la zone. Partagé entre
+    // le zoom molette et centerView() (bouton "Vue générale").
+    function refreshZoomVisuals(scale) {
       const sw = ZONE_STROKE_SCREEN_PX / scale;
       zoneStrokeLines.forEach(function (l) { l.strokeWidth(sw); });
       Object.keys(labels).forEach(function (num) {
@@ -1419,6 +1464,9 @@
         lbl.fontSize(Math.min(lbl.getAttr('maxFontCanvas'), BASE_ZONE_LABEL_PX / scale));
         lbl.offsetY(lbl.height() / 2);
       });
+    }
+    stage.on('wheel', function () {
+      refreshZoomVisuals(stage.scaleX());
       // stage.batchDraw() déjà planifié par attachWheelZoom — pas de draw supplémentaire.
     });
     attachPanning(stage);
@@ -1769,10 +1817,24 @@
       trySnap: trySnap,
       trySnapOutside: trySnapOutside,
       getScale: function () { return stage.scaleX(); },
+      // Bouton "Vue générale" : recentre et réajuste le zoom pour que tout le plan
+      // redevienne visible, comme au chargement initial (cf. getFitStageSize).
+      centerView: function () {
+        size = getFitStageSize(container, width, height, height, 0.04);
+        container.style.height = size.height + 'px';
+        stage.width(size.width);
+        stage.height(size.height);
+        stage.scale({ x: size.scale, y: size.scale });
+        stage.position({ x: size.x, y: size.y });
+        refreshZoomVisuals(size.scale);
+        rescaleObjectGroups(objectGroups, size.scale);
+        layer.batchDraw();
+        objectsLayer.batchDraw();
+      },
     };
   }
 
-  function initAssociationPanel(canvas) {
+  function initAssociationPanel(canvas, onSaved) {
     const panel = document.getElementById('np-association-panel');
     const saveBtn = document.getElementById('np-save-associations-btn');
     if (!panel || !canvas) return;
@@ -1888,17 +1950,20 @@
             associations.forEach(function (a) {
               if (!a.location_id) canvas.removePlacedObjectsForZone(a.zone_number);
             });
+            // Une association (dé)liée change l'ensemble des objets plaçables (cf.
+            // plan_pickable_objects côté serveur, filtré par locations associées).
+            if (onSaved) onSaved();
             if (!feedback) return;
             if (data.errors && data.errors.length) {
               feedback.innerHTML = `<span class="text-danger">${data.errors.join('<br>')}</span>`;
             } else {
-              const savedMessage = interpolate(gettext('%(saved)s association(s) enregistrée(s).'), { saved: data.saved }, true);
+              const savedMessage = interpolate(gettext('%(saved)s association(s) saved.'), { saved: data.saved }, true);
               feedback.innerHTML = `<span class="text-success">${savedMessage}</span>`;
             }
           })
           .catch(function () {
             saveBtn.disabled = false;
-            if (feedback) feedback.innerHTML = `<span class="text-danger">${gettext("Erreur réseau lors de l'enregistrement.")}</span>`;
+            if (feedback) feedback.innerHTML = `<span class="text-danger">${gettext('Network error while saving.')}</span>`;
           });
       });
     }
@@ -1910,7 +1975,7 @@
   function initPlacedObjectsUI(canvas) {
     const pickableContainer = document.getElementById('np-pickable-panel');
     const propertiesContainer = document.getElementById('np-properties-panel');
-    if (!canvas || !pickableContainer) return;
+    if (!canvas || !pickableContainer) return null;
 
     const properties = initPropertiesPanel(propertiesContainer);
 
@@ -1945,6 +2010,8 @@
         canvas.trySnapOutside(group);
       });
     });
+
+    return pickable;
   }
 
   // Vue d'un local (onglet "Plan" d'une Location) : canvas autonome affichant une
@@ -1981,7 +2048,9 @@
     const updateUrlTemplate = container.dataset.updateUrlTemplate;
     const removeUrlTemplate = container.dataset.removeUrlTemplate;
 
-    const size = getFillStageSize(container, width, height, 700);
+    // "Vue générale" (view all) : la pièce entière doit toujours être visible, centrée,
+    // avec une marge — pas seulement calée sur la largeur du conteneur (cf. getFitStageSize).
+    let size = getFitStageSize(container, width, height, 700, 0.08);
     container.style.height = size.height + 'px';
     const stage = new Konva.Stage({
       container: 'np-loc-canvas',
@@ -1989,6 +2058,8 @@
       height: size.height,
       scaleX: size.scale,
       scaleY: size.scale,
+      x: size.x,
+      y: size.y,
       pixelRatio: window.devicePixelRatio || 1,
     });
     attachWheelZoom(stage, function () { return objectGroups; });
@@ -2051,11 +2122,13 @@
       layer.add(line);
       strokeLines.push(line);
     }
-    stage.on('wheel', function () {
-      const sw = ZONE_STROKE_SCREEN_PX / stage.scaleX();
+    // Partagé entre le zoom molette et centerView() (bouton "Vue générale").
+    function refreshStrokeWidths(scale) {
+      const sw = ZONE_STROKE_SCREEN_PX / scale;
       strokeLines.forEach(function (l) { l.strokeWidth(sw); });
       layer.batchDraw();
-    });
+    }
+    stage.on('wheel', function () { refreshStrokeWidths(stage.scaleX()); });
 
     const objectsLayer = new Konva.Layer();
     stage.add(objectsLayer);
@@ -2116,7 +2189,25 @@
       },
       trySnap: trySnap,
       trySnapOutside: trySnapOutside,
+      // Bouton "Vue générale" : recentre et réajuste le zoom pour retrouver la vue
+      // initiale (pièce entière visible, centrée, avec marge — cf. getFitStageSize).
+      centerView: function () {
+        size = getFitStageSize(container, width, height, 700, 0.08);
+        container.style.height = size.height + 'px';
+        stage.width(size.width);
+        stage.height(size.height);
+        stage.scale({ x: size.scale, y: size.scale });
+        stage.position({ x: size.x, y: size.y });
+        refreshStrokeWidths(size.scale);
+        rescaleObjectGroups(objectGroups, size.scale);
+        objectsLayer.batchDraw();
+      },
     };
+
+    const centerViewBtn = document.getElementById('np-loc-center-view-btn');
+    if (centerViewBtn) {
+      centerViewBtn.addEventListener('click', function () { canvasApi.centerView(); });
+    }
 
     const pickableContainer = document.getElementById('np-pickable-panel');
     const propertiesContainer = document.getElementById('np-properties-panel');

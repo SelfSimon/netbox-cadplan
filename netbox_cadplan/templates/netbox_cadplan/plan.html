@@ -102,7 +102,12 @@
 <div class="row mt-3">
   <div class="col col-md-8">
     <div class="card">
-      <h5 class="card-header">{% blocktrans with layer=object.selected_layer %}Plan ({{ layer }}){% endblocktrans %}</h5>
+      <h5 class="card-header d-flex justify-content-between align-items-center">
+        <span>{% blocktrans with layer=object.selected_layer %}Plan ({{ layer }}){% endblocktrans %}</span>
+        <button type="button" id="np-center-view-btn" class="btn btn-sm btn-outline-secondary">
+          <i class="mdi mdi-image-filter-center-focus" aria-hidden="true"></i> {% trans "Center view" %}
+        </button>
+      </h5>
       <div class="card-body p-0">
         {{ zones_data|json_script:"np-zones-data" }}
         <div id="np-canvas"

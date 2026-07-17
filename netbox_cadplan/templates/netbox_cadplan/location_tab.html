@@ -6,7 +6,12 @@
 <div class="row">
   <div class="col col-md-8">
     <div class="card">
-      <h5 class="card-header">{% blocktrans with number=zone.number %}Plan du local — zone {{ number }}{% endblocktrans %}</h5>
+      <h5 class="card-header d-flex justify-content-between align-items-center">
+        <span>{% blocktrans with number=zone.number %}Location plan — zone {{ number }}{% endblocktrans %}</span>
+        <button type="button" id="np-loc-center-view-btn" class="btn btn-sm btn-outline-secondary">
+          <i class="mdi mdi-image-filter-center-focus" aria-hidden="true"></i> {% trans "Center view" %}
+        </button>
+      </h5>
       <div class="card-body p-0">
         <p class="text-muted px-3 pt-3 mb-0">
           {% trans "Plan" %} : <a href="{{ zone.plan.get_absolute_url }}">{{ zone.plan.name }}</a>
