@@ -59,11 +59,20 @@
 
 {% if object.dxf_file and not object.selected_layer %}
 <div class="row mt-3">
+  <div class="col col-md-12">
+    <div class="card">
+      <div class="card-body">
+        <p class="text-muted mb-0">{% trans "Choose a layer from the list to preview its content, then confirm the one that contains the location boundaries." %}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-3">
   <div class="col col-md-4">
     <div class="card">
-      <h5 class="card-header">{% trans "Sélection du calque" %}</h5>
+      <h5 class="card-header">{% trans "Layer selection" %}</h5>
       <div class="card-body">
-        <p class="text-muted">{% trans "Cliquez sur un calque pour en prévisualiser le contenu, puis confirmez celui qui contient les délimitations des locaux." %}</p>
         <div id="np-layer-panel"
              data-layers-url="{% url 'plugins:netbox_cadplan:plan_layers' object.pk %}"
              data-confirm-url="{% url 'plugins:netbox_cadplan:plan_confirm_layer' object.pk %}"
@@ -74,14 +83,14 @@
 
   <div class="col col-md-8">
     <div class="card">
-      <h5 class="card-header">{% trans "Aperçu du calque" %}</h5>
+      <h5 class="card-header">{% trans "Layer preview" %}</h5>
       <div class="card-body p-0">
         <div id="np-preview-canvas"
              data-width="{{ object.width_px }}"
              data-height="{{ object.height_px }}"
              data-preview-url="{% url 'plugins:netbox_cadplan:plan_layer_preview' object.pk %}"
              style="width:100%; max-height:{{ object.height_px }}px; overflow:hidden; position:relative;">
-          <p class="text-muted p-3 mb-0">{% trans "Sélectionnez un calque à gauche pour afficher son aperçu." %}</p>
+          <p class="text-muted p-3 mb-0">{% trans "Waiting for a selection…" %}</p>
         </div>
       </div>
     </div>

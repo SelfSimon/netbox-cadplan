@@ -174,46 +174,51 @@
       const applyBtn = document.createElement('button');
       applyBtn.type = 'button';
       applyBtn.className = 'btn btn-primary me-2';
-      applyBtn.textContent = gettext('Appliquer');
+      applyBtn.textContent = gettext('Apply');
       applyBtn.addEventListener('click', function () { doConfirm(layerName, applyBtn); });
       panel.appendChild(applyBtn);
 
       const cancelBtn = document.createElement('button');
       cancelBtn.type = 'button';
       cancelBtn.className = 'btn btn-outline-secondary';
-      cancelBtn.textContent = gettext('Annuler');
+      cancelBtn.textContent = gettext('Cancel');
       cancelBtn.addEventListener('click', function () { window.location.reload(); });
       panel.appendChild(cancelBtn);
     }
 
     function renderLayers(layers) {
       if (!layers.length) {
-        renderError(gettext('Aucun calque trouvé dans ce fichier DXF.'));
+        renderError(gettext('No layer found in this DXF file.'));
         return;
       }
 
-      const list = document.createElement('div');
-      list.className = 'list-group mb-3';
+      const select = document.createElement('select');
+      select.className = 'form-select mb-3';
+
+      const placeholderOption = document.createElement('option');
+      placeholderOption.value = '';
+      placeholderOption.textContent = gettext('Choose a layer…');
+      placeholderOption.disabled = true;
+      placeholderOption.selected = true;
+      select.appendChild(placeholderOption);
+
+      layers.forEach(function (layer) {
+        const option = document.createElement('option');
+        option.value = layer;
+        option.textContent = layer;
+        select.appendChild(option);
+      });
 
       const confirmBtn = document.createElement('button');
       confirmBtn.type = 'button';
       confirmBtn.className = 'btn btn-primary';
-      confirmBtn.textContent = gettext('Confirmer ce calque');
+      confirmBtn.textContent = gettext('Confirm this layer');
       confirmBtn.disabled = true;
 
-      layers.forEach(function (layer) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'list-group-item list-group-item-action';
-        btn.textContent = layer;
-        btn.addEventListener('click', function () {
-          selectedLayer = layer;
-          Array.from(list.children).forEach(function (el) { el.classList.remove('active'); });
-          btn.classList.add('active');
-          confirmBtn.disabled = false;
-          previewLayer(layer);
-        });
-        list.appendChild(btn);
+      select.addEventListener('change', function () {
+        selectedLayer = select.value || null;
+        confirmBtn.disabled = !selectedLayer;
+        if (selectedLayer) previewLayer(selectedLayer);
       });
 
       confirmBtn.addEventListener('click', function () {
@@ -237,18 +242,23 @@
       });
 
       panel.innerHTML = '';
-      panel.appendChild(list);
+      panel.appendChild(select);
       panel.appendChild(confirmBtn);
     }
 
-    panel.innerHTML = `<p class="text-muted mb-0">${gettext('Lecture des calques du fichier DXF…')}</p>`;
+    panel.innerHTML = `
+      <div class="d-flex align-items-center gap-2 text-muted">
+        <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+        <span>${gettext('Reading layers from the DXF file…')}</span>
+      </div>
+    `;
     fetch(layersUrl)
       .then(function (r) { return r.json(); })
       .then(function (data) {
         if (data.error) { renderError(data.error); return; }
         renderLayers(data.layers || []);
       })
-      .catch(function () { renderError(gettext('Erreur réseau lors de la lecture des calques.')); });
+      .catch(function () { renderError(gettext('Network error while reading layers.')); });
   }
 
   // Aperçu en lecture seule d'un calque, appelé à chaque clic sur un calque
