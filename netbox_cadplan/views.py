@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _l
@@ -91,6 +92,14 @@ def _serialize_pickable(obj):
         "name": str(obj),
         "url": obj.get_absolute_url(),
         "placeable": shape is not None,
+        # Devices sans DeviceTypeShape : lien direct vers la vue de configuration
+        # (cf. DeviceTypePlanShapeEditView) pour éviter à l'utilisateur de devoir
+        # retrouver le type d'appareil lui-même.
+        "configure_url": (
+            reverse("dcim:devicetype_plan_shape_edit", kwargs={"pk": obj.device_type_id})
+            if shape is None and isinstance(obj, Device)
+            else None
+        ),
     }
     entry.update(
         shape

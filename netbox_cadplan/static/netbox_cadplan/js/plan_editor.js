@@ -1117,10 +1117,16 @@
             });
         });
         tdAction.appendChild(btn);
+      } else if (item.configure_url) {
+        const link = document.createElement('a');
+        link.href = item.configure_url;
+        link.className = 'btn btn-sm btn-outline-secondary';
+        link.textContent = gettext('Configure the shape');
+        tdAction.appendChild(link);
       } else {
         const span = document.createElement('span');
         span.className = 'text-muted small';
-        span.textContent = gettext('Forme non configurée');
+        span.textContent = gettext('Shape not configured');
         tdAction.appendChild(span);
       }
       tr.appendChild(tdAction);

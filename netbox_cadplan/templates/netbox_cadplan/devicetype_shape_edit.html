@@ -1,4 +1,12 @@
 {% extends 'generic/object_edit.html' %}
+{% load i18n %}
+
+{% block content %}
+  <div class="alert alert-info mb-3">
+    {% trans "Device type" %}: <a href="{{ object.device_type.get_absolute_url }}">{{ object.device_type }}</a>
+  </div>
+  {{ block.super }}
+{% endblock %}
 
 {% block head %}
   {{ block.super }}
