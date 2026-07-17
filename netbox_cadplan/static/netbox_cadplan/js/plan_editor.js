@@ -5,6 +5,31 @@
     selected: { stroke: '#f59f00', fill: 'rgba(245,159,0,0.20)' },
   };
 
+  // NetBox bascule clair/sombre via l'attribut data-bs-theme sur <html> (sans rechargement
+  // de page). Le texte des libellés (numéro de zone, nom d'objet posé) est peint sur un
+  // canvas — il ne bénéficie donc pas des variables CSS de thème NetBox — d'où ce choix
+  // manuel clair/sombre pour rester lisible dans les deux cas.
+  const LABEL_FILL_LIGHT = '#1a1a1a';
+  const LABEL_FILL_DARK = '#f1f3f5';
+
+  function isDarkTheme() {
+    const explicit = document.documentElement.getAttribute('data-bs-theme');
+    if (explicit) return explicit === 'dark';
+    return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  }
+
+  function labelFillColor() {
+    return isDarkTheme() ? LABEL_FILL_DARK : LABEL_FILL_LIGHT;
+  }
+
+  // Rappelle `callback` à chaque bascule de thème (clic sur le sélecteur clair/sombre de
+  // NetBox), pour reteindre les libellés déjà dessinés sans devoir recharger la page.
+  function onThemeChange(callback) {
+    new MutationObserver(callback).observe(document.documentElement, {
+      attributes: true, attributeFilter: ['data-bs-theme'],
+    });
+  }
+
   function getCsrfToken() {
     // CSRF_COOKIE_HTTPONLY=True dans NetBox : le cookie csrftoken n'est pas lisible en JS.
     // NetBox expose le token via window.CSRF_TOKEN (voir templates/base/base.html).
@@ -790,7 +815,7 @@
 
     const fontSizePx = BASE_FONT_PX / (stageScale || 1);
     const label = new Konva.Text({
-      text: obj.name || '', fontSize: fontSizePx, fill: '#1a1a1a', listening: false,
+      text: obj.name || '', fontSize: fontSizePx, fill: labelFillColor(), listening: false,
     });
     positionLabel(label, shapeNode, obj.name_position || 'center', stageScale);
     group.add(label);
@@ -1755,7 +1780,7 @@
         text: zone.location_name || String(zone.number),
         fontSize: Math.min(maxFontCanvas, BASE_ZONE_LABEL_PX / size.scale),
         fontStyle: 'bold',
-        fill: '#1a1a1a',
+        fill: labelFillColor(),
         listening: false,
         width: labelW,
         wrap: 'none',
@@ -1779,6 +1804,14 @@
     });
 
     repaint();
+
+    onThemeChange(function () {
+      const fill = labelFillColor();
+      Object.keys(labels).forEach(function (num) { labels[num].fill(fill); });
+      Object.keys(objectGroups).forEach(function (id) { objectGroups[id].labelNode.fill(fill); });
+      layer.batchDraw();
+      objectsLayer.batchDraw();
+    });
 
     return {
       zones: zones,
@@ -2175,6 +2208,12 @@
     }
 
     objects.forEach(function (obj) { addObjectGroup(obj); });
+
+    onThemeChange(function () {
+      const fill = labelFillColor();
+      Object.keys(objectGroups).forEach(function (id) { objectGroups[id].labelNode.fill(fill); });
+      objectsLayer.batchDraw();
+    });
 
     const canvasApi = {
       mmPerPx: mmPerPx,
