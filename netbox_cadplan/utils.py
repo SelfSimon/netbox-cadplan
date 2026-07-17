@@ -1,3 +1,4 @@
+import functools
 import io
 import math
 import os
@@ -63,11 +64,11 @@ def _convert_dwg_to_dxf(dwg_path):
                 pass
 
 
-def _read_dxf(filepath):
+def _read_dxf_uncached(filepath):
     if _is_dwg(filepath):
         dxf_path = _convert_dwg_to_dxf(filepath)
         try:
-            return _read_dxf(dxf_path)
+            return _read_dxf_uncached(dxf_path)
         finally:
             try:
                 os.unlink(dxf_path)
@@ -81,19 +82,61 @@ def _read_dxf(filepath):
         except Exception as exc:
             raise DxfReadError(
                 _(
-                    "Impossible de lire ce fichier. Vérifiez qu'il s'agit bien "
-                    "d'un fichier DXF ou DWG valide."
+                    "Unable to read this file. Check that it is a valid "
+                    "DXF or DWG file."
                 )
             ) from exc
         return doc
     except OSError as exc:
-        raise DxfReadError(_("Le fichier n'a pas pu être ouvert.")) from exc
+        raise DxfReadError(_("The file could not be opened.")) from exc
+
+
+# Parser un DXF/DWG signifie construire un objet Python pour chaque entité du
+# dessin (potentiellement des dizaines de milliers) même pour une simple liste de
+# calques — et pour un DWG, le convertir d'abord via le sous-processus dwg2dxf.
+# get_dxf_layers/get_layer_geometry/get_layer_polygons/compute_mm_per_px sont
+# tous en lecture seule sur le Document retourné (l'export DXF construit son
+# propre ezdxf.new() séparé, cf. export_plan_dxf), donc partager un même
+# Document parsé une fois entre tous ces appels est sûr. La clé (chemin, mtime)
+# invalide automatiquement le cache dès qu'un plan est réimporté.
+@functools.lru_cache(maxsize=8)
+def _read_dxf_cached(filepath, mtime):
+    return _read_dxf_uncached(filepath)
+
+
+def _read_dxf(filepath):
+    try:
+        mtime = os.path.getmtime(filepath)
+    except OSError as exc:
+        raise DxfReadError(_("The file could not be opened.")) from exc
+    return _read_dxf_cached(filepath, mtime)
+
+
+def _layers_with_geometry(doc):
+    """
+    Noms des calques portant au moins une entité filiforme (LINE, LWPOLYLINE,
+    POLYLINE 2D) — exactement les types d'entités que get_layer_geometry()
+    affiche en aperçu. Sert à exclure de la liste les calques qui ne
+    contiennent que du texte/hachures/blocs/etc. et qui donneraient donc
+    systématiquement "Aucun élément trouvé sur ce calque." une fois
+    sélectionnés.
+    """
+    msp = doc.modelspace()
+    layers = set()
+    for entity in msp.query("LINE LWPOLYLINE"):
+        layers.add(entity.dxf.layer)
+    for entity in msp.query("POLYLINE"):
+        if entity.is_2d_polyline:
+            layers.add(entity.dxf.layer)
+    return layers
 
 
 def get_dxf_layers(filepath):
-    """Retourne la liste triée des noms de calques du fichier DXF."""
+    """Retourne la liste triée des noms de calques du fichier DXF contenant au
+    moins un élément affichable en aperçu (cf. _layers_with_geometry)."""
     doc = _read_dxf(filepath)
-    return sorted(layer.dxf.name for layer in doc.layers)
+    usable = _layers_with_geometry(doc)
+    return sorted(layer.dxf.name for layer in doc.layers if layer.dxf.name in usable)
 
 
 def _is_effectively_closed(points):
