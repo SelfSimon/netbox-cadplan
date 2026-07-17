@@ -7,9 +7,9 @@ except Exception:
         pass
 
 
-class NetBoxPlanConfig(PluginConfig):
-    name = "netbox_plan"
-    verbose_name = "NetBox Plan"
+class NetBoxCadPlanConfig(PluginConfig):
+    name = "netbox_cadplan"
+    verbose_name = "NetBox CadPlan"
     description = "Visual floor-plan management linked to Sites and Locations"
     version = "0.1.0"
     author = "Simon Lacroix"
@@ -25,4 +25,4 @@ class NetBoxPlanConfig(PluginConfig):
         from . import signals  # noqa: F401
 
 
-config = NetBoxPlanConfig
+config = NetBoxCadPlanConfig

@@ -1,9 +1,9 @@
-# English translations for the netbox_plan plugin.
-# This file is distributed under the same license as the netbox_plan package.
+# English translations for the netbox_cadplan plugin.
+# This file is distributed under the same license as the netbox_cadplan package.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: netbox_plan 0.1.0\n"
+"Project-Id-Version: netbox_cadplan 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-30 15:32+0000\n"
 "PO-Revision-Date: 2026-06-30 15:32+0000\n"
@@ -57,9 +57,9 @@ msgid ""
 msgstr ""
 "Optional NetBox Location (leave empty for a plan covering the whole site)"
 
-#: forms.py:28 templates/netbox_plan/location_tab.html:12
-#: templates/netbox_plan/plan.html:16 templates/netbox_plan/plan_tab.html:17
-#: templates/netbox_plan/plan_tab.html:88
+#: forms.py:28 templates/netbox_cadplan/location_tab.html:12
+#: templates/netbox_cadplan/plan.html:16 templates/netbox_cadplan/plan_tab.html:17
+#: templates/netbox_cadplan/plan_tab.html:88
 msgid "Plan"
 msgstr "Plan"
 
@@ -75,7 +75,7 @@ msgstr "The selected location does not belong to the chosen site."
 msgid "Dimensions"
 msgstr "Dimensions"
 
-#: forms.py:55 templates/netbox_plan/inc/devicetype_plan_shape_panel.html:8
+#: forms.py:55 templates/netbox_cadplan/inc/devicetype_plan_shape_panel.html:8
 msgid "Forme"
 msgstr "Shape"
 
@@ -155,23 +155,23 @@ msgstr "Plans"
 msgid "Tous les plans"
 msgstr "All plans"
 
-#: templates/netbox_plan/inc/devicetype_plan_shape_panel.html:3
+#: templates/netbox_cadplan/inc/devicetype_plan_shape_panel.html:3
 msgid "Forme sur le plan"
 msgstr "Shape on the plan"
 
-#: templates/netbox_plan/inc/devicetype_plan_shape_panel.html:13
+#: templates/netbox_cadplan/inc/devicetype_plan_shape_panel.html:13
 msgid "Largeur"
 msgstr "Width"
 
-#: templates/netbox_plan/inc/devicetype_plan_shape_panel.html:17
+#: templates/netbox_cadplan/inc/devicetype_plan_shape_panel.html:17
 msgid "Profondeur"
 msgstr "Depth"
 
-#: templates/netbox_plan/inc/devicetype_plan_shape_panel.html:22
+#: templates/netbox_cadplan/inc/devicetype_plan_shape_panel.html:22
 msgid "Diamètre"
 msgstr "Diameter"
 
-#: templates/netbox_plan/inc/devicetype_plan_shape_panel.html:28
+#: templates/netbox_cadplan/inc/devicetype_plan_shape_panel.html:28
 msgid ""
 "Aucune forme n'est configurée pour ce type de matériel. Les devices de ce "
 "type ne peuvent pas être placés sur un plan."
@@ -179,75 +179,75 @@ msgstr ""
 "No shape is configured for this device type. Devices of this type cannot "
 "be placed on a plan."
 
-#: templates/netbox_plan/inc/devicetype_plan_shape_panel.html:31
+#: templates/netbox_cadplan/inc/devicetype_plan_shape_panel.html:31
 msgid "Modifier la forme"
 msgstr "Edit shape"
 
-#: templates/netbox_plan/inc/devicetype_plan_shape_panel.html:31
+#: templates/netbox_cadplan/inc/devicetype_plan_shape_panel.html:31
 msgid "Configurer la forme"
 msgstr "Configure shape"
 
-#: templates/netbox_plan/location_tab.html:9
+#: templates/netbox_cadplan/location_tab.html:9
 #, python-format
 msgid "Plan du local — zone %(number)s"
 msgstr "Location plan — zone %(number)s"
 
-#: templates/netbox_plan/location_tab.html:31
-#: templates/netbox_plan/plan.html:123 templates/netbox_plan/plan_tab.html:61
+#: templates/netbox_cadplan/location_tab.html:31
+#: templates/netbox_cadplan/plan.html:123 templates/netbox_cadplan/plan_tab.html:61
 msgid "Objets à placer"
 msgstr "Objects to place"
 
-#: templates/netbox_plan/location_tab.html:40
-#: templates/netbox_plan/plan.html:134 templates/netbox_plan/plan_tab.html:72
+#: templates/netbox_cadplan/location_tab.html:40
+#: templates/netbox_cadplan/plan.html:134 templates/netbox_cadplan/plan_tab.html:72
 msgid "Propriétés"
 msgstr "Properties"
 
-#: templates/netbox_plan/location_tab.html:42
-#: templates/netbox_plan/plan.html:136 templates/netbox_plan/plan_tab.html:74
+#: templates/netbox_cadplan/location_tab.html:42
+#: templates/netbox_cadplan/plan.html:136 templates/netbox_cadplan/plan_tab.html:74
 msgid "Cliquez sur un objet placé sur le plan pour voir ses propriétés."
 msgstr "Click on an object placed on the plan to see its properties."
 
-#: templates/netbox_plan/location_tab.html:56
+#: templates/netbox_cadplan/location_tab.html:56
 msgid "Plan du local"
 msgstr "Location plan"
 
-#: templates/netbox_plan/location_tab.html:58
+#: templates/netbox_cadplan/location_tab.html:58
 msgid "Aucune zone de plan n'est associée à ce local."
 msgstr "No plan zone is associated with this location."
 
-#: templates/netbox_plan/plan.html:7 templates/netbox_plan/plan_tab.html:7
+#: templates/netbox_cadplan/plan.html:7 templates/netbox_cadplan/plan_tab.html:7
 msgid "Exporter en DXF"
 msgstr "Export as DXF"
 
-#: templates/netbox_plan/plan.html:20
+#: templates/netbox_cadplan/plan.html:20
 msgid "Nom"
 msgstr "Name"
 
-#: templates/netbox_plan/plan.html:24
+#: templates/netbox_cadplan/plan.html:24
 msgid "Site"
 msgstr "Site"
 
-#: templates/netbox_plan/plan.html:28
+#: templates/netbox_cadplan/plan.html:28
 msgid "Location"
 msgstr "Location"
 
-#: templates/netbox_plan/plan.html:32
+#: templates/netbox_cadplan/plan.html:32
 msgid "Fichier DXF"
 msgstr "DXF file"
 
-#: templates/netbox_plan/plan.html:42
+#: templates/netbox_cadplan/plan.html:42
 msgid "Calque sélectionné"
 msgstr "Selected layer"
 
-#: templates/netbox_plan/plan.html:46
+#: templates/netbox_cadplan/plan.html:46
 msgid "Zones"
 msgstr "Zones"
 
-#: templates/netbox_plan/plan.html:59
+#: templates/netbox_cadplan/plan.html:59
 msgid "Sélection du calque"
 msgstr "Layer selection"
 
-#: templates/netbox_plan/plan.html:61
+#: templates/netbox_cadplan/plan.html:61
 msgid ""
 "Cliquez sur un calque pour en prévisualiser le contenu, puis confirmez celui "
 "qui contient les délimitations des locaux."
@@ -255,36 +255,36 @@ msgstr ""
 "Click on a layer to preview its content, then confirm the one that contains "
 "the room boundaries."
 
-#: templates/netbox_plan/plan.html:71
+#: templates/netbox_cadplan/plan.html:71
 msgid "Aperçu du calque"
 msgstr "Layer preview"
 
-#: templates/netbox_plan/plan.html:78
+#: templates/netbox_cadplan/plan.html:78
 msgid "Sélectionnez un calque à gauche pour afficher son aperçu."
 msgstr "Select a layer on the left to display its preview."
 
-#: templates/netbox_plan/plan.html:90 templates/netbox_plan/plan_tab.html:28
+#: templates/netbox_cadplan/plan.html:90 templates/netbox_cadplan/plan_tab.html:28
 #, python-format
 msgid "Plan (%(layer)s)"
 msgstr "Plan (%(layer)s)"
 
-#: templates/netbox_plan/plan.html:106 templates/netbox_plan/plan_tab.html:44
+#: templates/netbox_cadplan/plan.html:106 templates/netbox_cadplan/plan_tab.html:44
 msgid "Associer un local"
 msgstr "Associate a location"
 
-#: templates/netbox_plan/plan.html:111 templates/netbox_plan/plan_tab.html:49
+#: templates/netbox_cadplan/plan.html:111 templates/netbox_cadplan/plan_tab.html:49
 msgid "Cliquez sur une zone du plan pour l'associer à un local."
 msgstr "Click on a zone of the plan to associate it with a location."
 
-#: templates/netbox_plan/plan.html:113 templates/netbox_plan/plan_tab.html:51
+#: templates/netbox_cadplan/plan.html:113 templates/netbox_cadplan/plan_tab.html:51
 msgid "Enregistrer"
 msgstr "Save"
 
-#: templates/netbox_plan/plan_tab.html:19
+#: templates/netbox_cadplan/plan_tab.html:19
 msgid "Aucun plan n'est associé."
 msgstr "No plan is associated."
 
-#: templates/netbox_plan/plan_tab.html:90
+#: templates/netbox_cadplan/plan_tab.html:90
 msgid "Ce plan n'a pas encore de zones générées."
 msgstr "This plan doesn't have any generated zones yet."
 
@@ -387,6 +387,6 @@ msgstr "%(field)s must be numeric."
 msgid "name_position invalide."
 msgstr "invalid name_position."
 
-#: forms.py templates/netbox_plan/plan.html
+#: forms.py templates/netbox_cadplan/plan.html
 msgid "Réimporter un DXF"
 msgstr "Reimport a DXF"

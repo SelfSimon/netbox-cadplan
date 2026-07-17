@@ -2,7 +2,7 @@ from netbox.api.routers import NetBoxRouter
 
 from . import views
 
-app_name = "netbox_plan"
+app_name = "netbox_cadplan"
 router = NetBoxRouter()
 router.register("plans", views.PlanViewSet)
 router.register("plan-zones", views.PlanZoneViewSet)

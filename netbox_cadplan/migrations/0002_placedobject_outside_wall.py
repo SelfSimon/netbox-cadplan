@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("netbox_plan", "0001_initial"),
+        ("netbox_cadplan", "0001_initial"),
     ]
 
     operations = [

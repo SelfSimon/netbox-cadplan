@@ -3,7 +3,7 @@
 
 {% block extra_controls %}
   {% if plan.dxf_file and plan.selected_layer %}
-    <a href="{% url 'plugins:netbox_plan:plan_export_dxf' plan.pk %}" class="btn btn-outline-secondary">
+    <a href="{% url 'plugins:netbox_cadplan:plan_export_dxf' plan.pk %}" class="btn btn-outline-secondary">
       <i class="mdi mdi-download" aria-hidden="true"></i> {% trans "Exporter en DXF" %}
     </a>
   {% endif %}
@@ -32,8 +32,8 @@
              data-width="{{ plan.width_px }}"
              data-height="{{ plan.height_px }}"
              data-mm-per-px="{{ plan.mm_per_px|default_if_none:'' }}"
-             data-update-url-template="{% url 'plugins:netbox_plan:update_placed_object' 999999 %}"
-             data-remove-url-template="{% url 'plugins:netbox_plan:remove_placed_object' 999999 %}"
+             data-update-url-template="{% url 'plugins:netbox_cadplan:update_placed_object' 999999 %}"
+             data-remove-url-template="{% url 'plugins:netbox_cadplan:remove_placed_object' 999999 %}"
              style="width:100%; max-height:{{ plan.height_px }}px; overflow:hidden; position:relative;"></div>
       </div>
     </div>
@@ -44,8 +44,8 @@
       <h5 class="card-header">{% trans "Associer un local" %}</h5>
       <div class="card-body">
         <div id="np-association-panel"
-             data-locations-api-url="{% url 'plugins:netbox_plan:plan_locations' plan.pk %}"
-             data-save-url="{% url 'plugins:netbox_plan:plan_save_associations' plan.pk %}">
+             data-locations-api-url="{% url 'plugins:netbox_cadplan:plan_locations' plan.pk %}"
+             data-save-url="{% url 'plugins:netbox_cadplan:plan_save_associations' plan.pk %}">
           <p class="text-muted mb-0">{% trans "Cliquez sur une zone du plan pour l'associer à un local." %}</p>
         </div>
         <button type="button" id="np-save-associations-btn" class="btn btn-primary mt-3">{% trans "Enregistrer" %}</button>
@@ -67,17 +67,17 @@
       <h5 class="card-header">{% trans "Objets à placer" %}</h5>
       <div class="card-body">
         <div id="np-pickable-panel"
-             data-pickable-url="{% url 'plugins:netbox_plan:plan_pickable_objects' plan.pk %}"
-             data-place-url-template="{% url 'plugins:netbox_plan:place_object' 999999 %}"></div>
+             data-pickable-url="{% url 'plugins:netbox_cadplan:plan_pickable_objects' plan.pk %}"
+             data-place-url-template="{% url 'plugins:netbox_cadplan:place_object' 999999 %}"></div>
       </div>
     </div>
   </div>
 </div>
 
-<link rel="stylesheet" href="{% static 'netbox_plan/css/plan.css' %}?v=72">
+<link rel="stylesheet" href="{% static 'netbox_cadplan/css/plan.css' %}?v=72">
 <script src="https://unpkg.com/konva@9/konva.min.js"></script>
-<script src="{% url 'plugins:netbox_plan:javascript-catalog' %}"></script>
-<script src="{% static 'netbox_plan/js/plan_editor.js' %}?v=72"></script>
+<script src="{% url 'plugins:netbox_cadplan:javascript-catalog' %}"></script>
+<script src="{% static 'netbox_cadplan/js/plan_editor.js' %}?v=72"></script>
 {% else %}
 <div class="row">
   <div class="col col-md-12">

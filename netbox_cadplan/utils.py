@@ -492,7 +492,7 @@ def extract_zone_svg(polygon_points, zone_number):
     return buffer.getvalue().encode("utf-8")
 
 
-DEVICE_EXPORT_LAYER = "NETBOX_PLAN_DEVICES"
+DEVICE_EXPORT_LAYER = "NETBOX_CADPLAN_DEVICES"
 
 
 def export_plan_dxf(filepath, selected_layer, width_px, height_px, placed_objects):

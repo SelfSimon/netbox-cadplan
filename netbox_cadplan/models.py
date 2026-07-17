@@ -51,7 +51,7 @@ class Plan(NetBoxModel):
         return self.name
 
     def get_absolute_url(self):
-        return reverse("plugins:netbox_plan:plan", args=[self.pk])
+        return reverse("plugins:netbox_cadplan:plan", args=[self.pk])
 
     def clean(self):
         super().clean()
@@ -155,7 +155,7 @@ class PlanZone(NetBoxModel):
         return f"Zone {self.number} – {self.plan}"
 
     def get_absolute_url(self):
-        return reverse("plugins:netbox_plan:plan", args=[self.plan_id])
+        return reverse("plugins:netbox_cadplan:plan", args=[self.plan_id])
 
 
 class DeviceTypeShape(NetBoxModel):
@@ -260,4 +260,4 @@ class PlacedObject(NetBoxModel):
         return f"{self.content_object} @ {self.zone}"
 
     def get_absolute_url(self):
-        return reverse("plugins:netbox_plan:plan", args=[self.zone.plan_id])
+        return reverse("plugins:netbox_cadplan:plan", args=[self.zone.plan_id])

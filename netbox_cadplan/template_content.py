@@ -6,12 +6,12 @@ class DeviceTypePlanShapeExtension(PluginTemplateExtension):
 
     def right_page(self):
         request = self.context["request"]
-        if not request.user.has_perm("netbox_plan.view_devicetypeshape"):
+        if not request.user.has_perm("netbox_cadplan.view_devicetypeshape"):
             return ""
         device_type = self.context["object"]
         shape = getattr(device_type, "plan_shape", None)
         return self.render(
-            "netbox_plan/inc/devicetype_plan_shape_panel.html",
+            "netbox_cadplan/inc/devicetype_plan_shape_panel.html",
             extra_context={"shape": shape},
         )
 

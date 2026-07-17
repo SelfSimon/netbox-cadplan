@@ -14,7 +14,7 @@ from ..models import DeviceTypeShape, PlacedObject, Plan, PlanZone
 
 class PlanSerializer(NetBoxModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="plugins-api:netbox_plan-api:plan-detail"
+        view_name="plugins-api:netbox_cadplan-api:plan-detail"
     )
     site = SiteSerializer(nested=True)
     location = LocationSerializer(nested=True, required=False, allow_null=True)
@@ -43,7 +43,7 @@ class PlanSerializer(NetBoxModelSerializer):
 
 class PlanZoneSerializer(NetBoxModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="plugins-api:netbox_plan-api:planzone-detail"
+        view_name="plugins-api:netbox_cadplan-api:planzone-detail"
     )
     plan = PlanSerializer(nested=True)
     location = LocationSerializer(nested=True, required=False, allow_null=True)
@@ -70,7 +70,7 @@ class PlanZoneSerializer(NetBoxModelSerializer):
 
 class DeviceTypeShapeSerializer(NetBoxModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="plugins-api:netbox_plan-api:devicetypeshape-detail"
+        view_name="plugins-api:netbox_cadplan-api:devicetypeshape-detail"
     )
     device_type = DeviceTypeSerializer(nested=True)
 
@@ -96,7 +96,7 @@ class DeviceTypeShapeSerializer(NetBoxModelSerializer):
 
 class PlacedObjectSerializer(NetBoxModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="plugins-api:netbox_plan-api:placedobject-detail"
+        view_name="plugins-api:netbox_cadplan-api:placedobject-detail"
     )
     zone = PlanZoneSerializer(nested=True)
     object_type = ContentTypeField(queryset=ObjectType.objects.all())

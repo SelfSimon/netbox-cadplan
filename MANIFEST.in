@@ -2,6 +2,6 @@ include LICENSE
 include README.md
 include CHANGELOG.md
 include CONTRIBUTING.md
-recursive-include netbox_plan/templates *
-recursive-include netbox_plan/static *
-recursive-include netbox_plan/locale *
+recursive-include netbox_cadplan/templates *
+recursive-include netbox_cadplan/static *
+recursive-include netbox_cadplan/locale *

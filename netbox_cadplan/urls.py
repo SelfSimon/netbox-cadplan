@@ -4,7 +4,7 @@ from utilities.urls import get_model_urls
 
 from . import views  # noqa: F401  (déclenche les décorateurs register_model_view)
 
-app_name = "netbox_plan"
+app_name = "netbox_cadplan"
 
 urlpatterns = (
     # Expose gettext()/ngettext()/interpolate() côté JS (catalogue de traduction du
@@ -12,10 +12,10 @@ urlpatterns = (
     # <script> avant ce dernier dans les templates qui l'utilisent.
     path(
         "jsi18n/",
-        JavaScriptCatalog.as_view(packages=["netbox_plan"]),
+        JavaScriptCatalog.as_view(packages=["netbox_cadplan"]),
         name="javascript-catalog",
     ),
-    path("plans/", include(get_model_urls("netbox_plan", "plan", detail=False))),
+    path("plans/", include(get_model_urls("netbox_cadplan", "plan", detail=False))),
     path("plans/<int:pk>/layers/", views.plan_layers, name="plan_layers"),
     path("plans/<int:pk>/locations/", views.plan_locations, name="plan_locations"),
     path(
@@ -60,5 +60,5 @@ urlpatterns = (
         views.remove_placed_object,
         name="remove_placed_object",
     ),
-    path("plans/<int:pk>/", include(get_model_urls("netbox_plan", "plan"))),
+    path("plans/<int:pk>/", include(get_model_urls("netbox_cadplan", "plan"))),
 )

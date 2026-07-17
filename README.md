@@ -1,4 +1,4 @@
-# netbox-plan
+# netbox-cadplan
 
 NetBox plugin for visual floor-plan management. A plan is attached to a
 NetBox `Site` (required) and, optionally, to a `Location` within that site,
@@ -18,9 +18,9 @@ in a dedicated tab on its NetBox page.
 ### 1. Install the package
 
 ```bash
-pip install netbox-plan
+pip install netbox-cadplan
 # or from source:
-pip install git+https://github.com/simonlacroix/netbox-plan.git
+pip install git+https://github.com/simonlacroix/netbox-cadplan.git
 ```
 
 ### 2. Enable the plugin in NetBox
@@ -31,14 +31,14 @@ on your setup):
 ```python
 PLUGINS = [
     # ... other plugins
-    'netbox_plan',
+    'netbox_cadplan',
 ]
 ```
 
 ### 3. Run migrations and restart NetBox
 
 ```bash
-python manage.py migrate netbox_plan
+python manage.py migrate netbox_cadplan
 sudo systemctl restart netbox netbox-rq
 ```
 

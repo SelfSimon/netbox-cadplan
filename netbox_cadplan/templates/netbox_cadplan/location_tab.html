@@ -21,8 +21,8 @@
              data-offset-y="{{ offset_y }}"
              data-mm-per-px="{{ mm_per_px|default_if_none:'' }}"
              data-plan-width="{{ zone.plan.width_px }}"
-             data-update-url-template="{% url 'plugins:netbox_plan:update_placed_object' 999999 %}"
-             data-remove-url-template="{% url 'plugins:netbox_plan:remove_placed_object' 999999 %}"
+             data-update-url-template="{% url 'plugins:netbox_cadplan:update_placed_object' 999999 %}"
+             data-remove-url-template="{% url 'plugins:netbox_cadplan:remove_placed_object' 999999 %}"
              style="width:100%; max-height:700px; overflow:hidden; position:relative;"></div>
       </div>
     </div>
@@ -33,8 +33,8 @@
       <h5 class="card-header">{% trans "Objets à placer" %}</h5>
       <div class="card-body">
         <div id="np-pickable-panel"
-             data-pickable-url="{% url 'plugins:netbox_plan:zone_pickable_objects' zone.pk %}"
-             data-place-url="{% url 'plugins:netbox_plan:place_object' zone.pk %}"></div>
+             data-pickable-url="{% url 'plugins:netbox_cadplan:zone_pickable_objects' zone.pk %}"
+             data-place-url="{% url 'plugins:netbox_cadplan:place_object' zone.pk %}"></div>
       </div>
     </div>
 
@@ -47,10 +47,10 @@
   </div>
 </div>
 
-<link rel="stylesheet" href="{% static 'netbox_plan/css/plan.css' %}?v=72">
+<link rel="stylesheet" href="{% static 'netbox_cadplan/css/plan.css' %}?v=72">
 <script src="https://unpkg.com/konva@9/konva.min.js"></script>
-<script src="{% url 'plugins:netbox_plan:javascript-catalog' %}"></script>
-<script src="{% static 'netbox_plan/js/plan_editor.js' %}?v=72"></script>
+<script src="{% url 'plugins:netbox_cadplan:javascript-catalog' %}"></script>
+<script src="{% static 'netbox_cadplan/js/plan_editor.js' %}?v=72"></script>
 {% else %}
 <div class="row">
   <div class="col col-md-12">

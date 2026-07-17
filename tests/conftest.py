@@ -1,7 +1,7 @@
 """Pytest fixtures and lightweight Django/NetBox stubs for local development.
 
 This file registers minimal `django.utils.translation` and `netbox.plugins`
-modules in `sys.modules` so `netbox_plan` (and `netbox_plan.utils` in
+modules in `sys.modules` so `netbox_cadplan` (and `netbox_cadplan.utils` in
 particular, which imports `gettext` at module scope) can be imported and
 tested without a full Django/NetBox installation.
 """

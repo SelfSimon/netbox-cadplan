@@ -247,12 +247,12 @@ class LocationZoneView(generic.ObjectView):
     """
 
     queryset = Location.objects.all()
-    template_name = "netbox_plan/location_tab.html"
+    template_name = "netbox_cadplan/location_tab.html"
 
     tab = ViewTab(
         label=_l("Zone"),
         visible=_location_has_zone,
-        permission="netbox_plan.view_planzone",
+        permission="netbox_cadplan.view_planzone",
     )
 
     def get_extra_context(self, request, instance):
@@ -321,12 +321,12 @@ class SitePlanView(generic.ObjectView):
     """
 
     queryset = Site.objects.all()
-    template_name = "netbox_plan/plan_tab.html"
+    template_name = "netbox_cadplan/plan_tab.html"
 
     tab = ViewTab(
         label=_l("Plan"),
         visible=_site_has_plan,
-        permission="netbox_plan.view_plan",
+        permission="netbox_cadplan.view_plan",
     )
 
     def get_extra_context(self, request, instance):
@@ -344,12 +344,12 @@ class LocationPlanView(generic.ObjectView):
     """
 
     queryset = Location.objects.all()
-    template_name = "netbox_plan/plan_tab.html"
+    template_name = "netbox_cadplan/plan_tab.html"
 
     tab = ViewTab(
         label=_l("Plan"),
         visible=_location_has_root_plan,
-        permission="netbox_plan.view_plan",
+        permission="netbox_cadplan.view_plan",
     )
 
     def get_extra_context(self, request, instance):
@@ -367,7 +367,7 @@ class DeviceTypePlanShapeEditView(generic.ObjectEditView):
 
     queryset = DeviceTypeShape.objects.all()
     form = forms.DeviceTypeShapeForm
-    template_name = "netbox_plan/devicetype_shape_edit.html"
+    template_name = "netbox_cadplan/devicetype_shape_edit.html"
 
     def get_object(self, **kwargs):
         device_type = get_object_or_404(DeviceType, pk=kwargs["pk"])
@@ -399,7 +399,7 @@ def _location_is_valid_for_plan(location, plan):
 def plan_layers(request, pk):
     """GET /plugins/plan/plans/<pk>/layers/ -> {"layers": [...]}"""
     plan = get_object_or_404(Plan, pk=pk)
-    if not request.user.has_perm("netbox_plan.view_plan"):
+    if not request.user.has_perm("netbox_cadplan.view_plan"):
         return HttpResponseForbidden()
     if not plan.dxf_file:
         return JsonResponse(
@@ -425,7 +425,7 @@ def plan_layer_preview(request, pk):
     plusieurs calques avant de choisir le bon.
     """
     plan = get_object_or_404(Plan, pk=pk)
-    if not request.user.has_perm("netbox_plan.view_plan"):
+    if not request.user.has_perm("netbox_cadplan.view_plan"):
         return HttpResponseForbidden()
     if not plan.dxf_file:
         return JsonResponse(
@@ -465,7 +465,7 @@ def plan_locations(request, pk):
     -> Local 114.1) nécessitent une vraie requête d'arborescence MPTT.
     """
     plan = get_object_or_404(Plan, pk=pk)
-    if not request.user.has_perm("netbox_plan.view_plan"):
+    if not request.user.has_perm("netbox_cadplan.view_plan"):
         return HttpResponseForbidden()
 
     candidates = _candidate_locations(plan, request.user)
@@ -548,7 +548,7 @@ def plan_confirm_layer_preview(request, pk):
     plan_confirm_layer, même algorithme de réconciliation).
     """
     plan = get_object_or_404(Plan, pk=pk)
-    if not request.user.has_perm("netbox_plan.change_plan"):
+    if not request.user.has_perm("netbox_cadplan.change_plan"):
         return HttpResponseForbidden()
 
     layer_name, polygons, error = _layer_name_and_polygons_from_request(plan, request)
@@ -593,7 +593,7 @@ def plan_confirm_layer(request, pk):
     pour un réimport.
     """
     plan = get_object_or_404(Plan, pk=pk)
-    if not request.user.has_perm("netbox_plan.change_plan"):
+    if not request.user.has_perm("netbox_cadplan.change_plan"):
         return HttpResponseForbidden()
 
     layer_name, polygons, error = _layer_name_and_polygons_from_request(plan, request)
@@ -670,7 +670,7 @@ def plan_save_associations(request, pk):
     Un location_id null/absent désassocie la zone.
     """
     plan = get_object_or_404(Plan, pk=pk)
-    if not request.user.has_perm("netbox_plan.change_planzone"):
+    if not request.user.has_perm("netbox_cadplan.change_planzone"):
         return HttpResponseForbidden()
     try:
         data = json.loads(request.body)
@@ -779,7 +779,7 @@ def zone_pickable_objects(request, zone_pk):
     Racks/Devices non rackés du local associé à cette zone, non encore placés.
     """
     zone = get_object_or_404(PlanZone, pk=zone_pk)
-    if not request.user.has_perm("netbox_plan.view_planzone"):
+    if not request.user.has_perm("netbox_cadplan.view_planzone"):
         return HttpResponseForbidden()
     if not zone.location:
         return JsonResponse({"racks": [], "devices": []})
@@ -799,7 +799,7 @@ def plan_pickable_objects(request, pk):
     (aucun polygone où ancrer le placement).
     """
     plan = get_object_or_404(Plan, pk=pk)
-    if not request.user.has_perm("netbox_plan.view_plan"):
+    if not request.user.has_perm("netbox_cadplan.view_plan"):
         return HttpResponseForbidden()
 
     locations = list(_candidate_locations(plan, request.user))
@@ -829,7 +829,7 @@ def plan_export_dxf(request, pk):
     position réelle (transformation inverse de celle utilisée à l'import).
     """
     plan = get_object_or_404(Plan, pk=pk)
-    if not request.user.has_perm("netbox_plan.view_plan"):
+    if not request.user.has_perm("netbox_cadplan.view_plan"):
         return HttpResponseForbidden()
     if not plan.dxf_file or not plan.selected_layer:
         return JsonResponse(
@@ -904,7 +904,7 @@ def place_object(request, zone_pk):
     Crée le PlacedObject au centre de la bounding box du polygone de la zone.
     """
     zone = get_object_or_404(PlanZone, pk=zone_pk)
-    if not request.user.has_perm("netbox_plan.add_placedobject"):
+    if not request.user.has_perm("netbox_cadplan.add_placedobject"):
         return HttpResponseForbidden()
     try:
         data = json.loads(request.body)
@@ -975,7 +975,7 @@ def update_placed_object(request, pk):
     ajustés par le client si besoin).
     """
     placed = get_object_or_404(PlacedObject, pk=pk)
-    if not request.user.has_perm("netbox_plan.change_placedobject"):
+    if not request.user.has_perm("netbox_cadplan.change_placedobject"):
         return HttpResponseForbidden()
     try:
         data = json.loads(request.body)
@@ -1015,7 +1015,7 @@ def update_placed_object(request, pk):
 def remove_placed_object(request, pk):
     """POST /plugins/plan/placed-objects/<pk>/remove/ : retire l'objet du plan."""
     placed = get_object_or_404(PlacedObject, pk=pk)
-    if not request.user.has_perm("netbox_plan.delete_placedobject"):
+    if not request.user.has_perm("netbox_cadplan.delete_placedobject"):
         return HttpResponseForbidden()
     placed.delete()
     return JsonResponse({"status": "ok"})

@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("netbox_plan", "0002_placedobject_outside_wall"),
+        ("netbox_cadplan", "0002_placedobject_outside_wall"),
     ]
 
     operations = [

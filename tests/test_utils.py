@@ -1,6 +1,6 @@
 import pytest
 
-from netbox_plan import utils
+from netbox_cadplan import utils
 
 
 def test_is_effectively_closed_true_for_near_identical_endpoints():

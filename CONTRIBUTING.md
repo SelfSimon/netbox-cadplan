@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for your interest in contributing to netbox-plan.
+Thank you for your interest in contributing to netbox-cadplan.
 
 - Please open issues for bugs or feature requests on the repository issue tracker.
 - For code contributions, fork the repository, create a feature branch, and open a pull request.

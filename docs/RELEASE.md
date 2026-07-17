@@ -6,7 +6,7 @@ to TestPyPI/PyPI.
 
 1. Bump version
    - Update `version` in `pyproject.toml` (e.g. `0.1.0 -> 0.1.1`).
-   - Update `version` in `netbox_plan/__init__.py` (`NetBoxPlanConfig.version`) to match.
+   - Update `version` in `netbox_cadplan/__init__.py` (`NetBoxCadPlanConfig.version`) to match.
    - Update `CHANGELOG.md` with release notes.
 
 2. Run tests and linters locally
@@ -39,7 +39,7 @@ Remove-Item Env:TWINE_USERNAME; Remove-Item Env:TWINE_PASSWORD
 5. Install from TestPyPI to validate
 
 ```powershell
-pip install --index-url https://test.pypi.org/simple/ --no-deps netbox-plan==X.Y.Z
+pip install --index-url https://test.pypi.org/simple/ --no-deps netbox-cadplan==X.Y.Z
 ```
 
 6. Publish to PyPI

@@ -173,7 +173,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="zones",
-                        to="netbox_plan.plan",
+                        to="netbox_cadplan.plan",
                     ),
                 ),
                 (
@@ -234,7 +234,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="placed_objects",
-                        to="netbox_plan.planzone",
+                        to="netbox_cadplan.planzone",
                     ),
                 ),
             ],
