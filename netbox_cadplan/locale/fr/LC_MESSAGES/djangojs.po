@@ -1,14 +1,12 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# French translations for the netbox_cadplan plugin (source strings are in English).
+# This file is distributed under the same license as the netbox_cadplan package.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: netbox_cadplan 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-30 15:32+0000\n"
-"PO-Revision-Date: 2026-06-29 18:04+0000\n"
+"POT-Creation-Date: 2026-07-17 00:00+0000\n"
+"PO-Revision-Date: 2026-07-17 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -17,166 +15,177 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: static/netbox_cadplan/js/plan_editor.js:121
-msgid "Aucun calque trouvé dans ce fichier DXF."
-msgstr "Aucun calque trouvé dans ce fichier DXF."
-
-#: static/netbox_cadplan/js/plan_editor.js:131
-msgid "Confirmer ce calque"
-msgstr "Confirmer ce calque"
-
-#: static/netbox_cadplan/js/plan_editor.js:162
-msgid "Erreur réseau lors de la confirmation du calque."
+#: static/netbox_cadplan/js/plan_editor.js:138
+msgid "Network error while confirming the layer."
 msgstr "Erreur réseau lors de la confirmation du calque."
 
-#: static/netbox_cadplan/js/plan_editor.js:170
-msgid "Lecture des calques du fichier DXF…"
-msgstr "Lecture des calques du fichier DXF…"
+#: static/netbox_cadplan/js/plan_editor.js:162
+#, python-format
+msgid ""
+"%(unchanged)s zone(s) unchanged, %(removed)s zone(s) removed "
+"(%(objects)s placed object(s) will be removed), %(created)s new "
+"zone(s)."
+msgstr ""
+"%(unchanged)s zone(s) inchangée(s), %(removed)s zone(s) supprimée(s) "
+"(%(objects)s objet(s) posé(s) seront retirés), %(created)s nouvelle(s) "
+"zone(s)."
 
 #: static/netbox_cadplan/js/plan_editor.js:177
-msgid "Erreur réseau lors de la lecture des calques."
+msgid "Apply"
+msgstr "Appliquer"
+
+#: static/netbox_cadplan/js/plan_editor.js:184
+msgid "Cancel"
+msgstr "Annuler"
+
+#: static/netbox_cadplan/js/plan_editor.js:191
+msgid "No layer found in this DXF file."
+msgstr "Aucun calque trouvé dans ce fichier DXF."
+
+#: static/netbox_cadplan/js/plan_editor.js:200
+msgid "Choose a layer…"
+msgstr "Choisissez un calque…"
+
+#: static/netbox_cadplan/js/plan_editor.js:215
+msgid "Confirm this layer"
+msgstr "Confirmer ce calque"
+
+#: static/netbox_cadplan/js/plan_editor.js:252
+msgid "Reading layers from the DXF file…"
+msgstr "Lecture des calques du fichier DXF…"
+
+#: static/netbox_cadplan/js/plan_editor.js:261
+msgid "Network error while reading layers."
 msgstr "Erreur réseau lors de la lecture des calques."
 
-#: static/netbox_cadplan/js/plan_editor.js:190
-msgid "Chargement de l'aperçu…"
+#: static/netbox_cadplan/js/plan_editor.js:274
+msgid "Loading preview…"
 msgstr "Chargement de l'aperçu…"
 
-#: static/netbox_cadplan/js/plan_editor.js:201
-msgid "Aucun élément trouvé sur ce calque."
+#: static/netbox_cadplan/js/plan_editor.js:285
+msgid "No elements found on this layer."
 msgstr "Aucun élément trouvé sur ce calque."
 
-#: static/netbox_cadplan/js/plan_editor.js:205
-msgid "Konva.js n'a pas pu être chargé."
+#: static/netbox_cadplan/js/plan_editor.js:289
+msgid "Konva.js could not be loaded."
 msgstr "Konva.js n'a pas pu être chargé."
 
-#: static/netbox_cadplan/js/plan_editor.js:237
-msgid "Erreur réseau lors de l'aperçu du calque."
+#: static/netbox_cadplan/js/plan_editor.js:322
+msgid "Network error while previewing the layer."
 msgstr "Erreur réseau lors de l'aperçu du calque."
 
-#: static/netbox_cadplan/js/plan_editor.js:245
-msgid "En haut"
+#: static/netbox_cadplan/js/plan_editor.js:330
+msgid "Top"
 msgstr "En haut"
 
-#: static/netbox_cadplan/js/plan_editor.js:245
-msgid "En bas"
+#: static/netbox_cadplan/js/plan_editor.js:330
+msgid "Bottom"
 msgstr "En bas"
 
-#: static/netbox_cadplan/js/plan_editor.js:245
-msgid "À gauche"
+#: static/netbox_cadplan/js/plan_editor.js:330
+msgid "Left"
 msgstr "À gauche"
 
-#: static/netbox_cadplan/js/plan_editor.js:246
-msgid "À droite"
+#: static/netbox_cadplan/js/plan_editor.js:331
+msgid "Right"
 msgstr "À droite"
 
-#: static/netbox_cadplan/js/plan_editor.js:246
-msgid "Au centre"
+#: static/netbox_cadplan/js/plan_editor.js:331
+msgid "Center"
 msgstr "Au centre"
 
-#: static/netbox_cadplan/js/plan_editor.js:784
-msgid "Placer"
+#: static/netbox_cadplan/js/plan_editor.js:1102
+msgid "Place"
 msgstr "Placer"
 
-#: static/netbox_cadplan/js/plan_editor.js:815
-msgid "Forme non configurée"
+#: static/netbox_cadplan/js/plan_editor.js:1133
+msgid "Shape not configured"
 msgstr "Forme non configurée"
 
-#: static/netbox_cadplan/js/plan_editor.js:827
+#: static/netbox_cadplan/js/plan_editor.js:1145
 msgid "Racks"
 msgstr "Racks"
 
-#: static/netbox_cadplan/js/plan_editor.js:827
-msgid "Devices non rackés"
+#: static/netbox_cadplan/js/plan_editor.js:1145
+msgid "Unracked devices"
 msgstr "Devices non rackés"
 
-#: static/netbox_cadplan/js/plan_editor.js:849
-msgid "Aucun objet disponible."
+#: static/netbox_cadplan/js/plan_editor.js:1167
+msgid "No objects available."
 msgstr "Aucun objet disponible."
 
-#: static/netbox_cadplan/js/plan_editor.js:881
-msgid "Cliquez sur un objet placé sur le plan pour voir ses propriétés."
+#: static/netbox_cadplan/js/plan_editor.js:1199
+msgid "Click an object placed on the plan to view its properties."
 msgstr "Cliquez sur un objet placé sur le plan pour voir ses propriétés."
 
-#: static/netbox_cadplan/js/plan_editor.js:907
+#: static/netbox_cadplan/js/plan_editor.js:1225
 msgid "Rotation (°)"
 msgstr "Rotation (°)"
 
-#: static/netbox_cadplan/js/plan_editor.js:927
-msgid "Aimanter au mur"
+#: static/netbox_cadplan/js/plan_editor.js:1245
+msgid "Snap to wall"
 msgstr "Aimanter au mur"
 
-#: static/netbox_cadplan/js/plan_editor.js:935
-msgid "Hors des murs"
+#: static/netbox_cadplan/js/plan_editor.js:1260
+msgid "Outside the walls"
 msgstr "Hors des murs"
 
-#: static/netbox_cadplan/js/plan_editor.js:942
-msgid "Position du nom"
+#: static/netbox_cadplan/js/plan_editor.js:1280
+msgid "Name position"
 msgstr "Position du nom"
 
-#: static/netbox_cadplan/js/plan_editor.js:996
-msgid "Retirer du plan"
+#: static/netbox_cadplan/js/plan_editor.js:1357
+msgid "Remove from plan"
 msgstr "Retirer du plan"
 
-#: static/netbox_cadplan/js/plan_editor.js:1231
-msgid "Zone %(number)s sélectionnée"
+#: static/netbox_cadplan/js/plan_editor.js:1801
+#, python-format
+msgid "Zone %(number)s selected"
 msgstr "Zone %(number)s sélectionnée"
 
-#: static/netbox_cadplan/js/plan_editor.js:1239
-msgid "— Aucun local —"
+#: static/netbox_cadplan/js/plan_editor.js:1809
+msgid "— No location —"
 msgstr "— Aucun local —"
 
-#: static/netbox_cadplan/js/plan_editor.js:1255
-msgid "Associer à la zone %(number)s"
+#: static/netbox_cadplan/js/plan_editor.js:1825
+#, python-format
+msgid "Associate with zone %(number)s"
 msgstr "Associer à la zone %(number)s"
 
-#: static/netbox_cadplan/js/plan_editor.js:1262
+#: static/netbox_cadplan/js/plan_editor.js:1831
+#, python-format
 msgid ""
-"Voulez-vous vraiment délier le local « %(location_name)s » de la zone %"
-"(number)s ? Une fois enregistré, l'onglet \"Plan\" disparaîtra de la page de "
-"ce local, le numéro de zone réapparaîtra sur le plan à la place de son nom, "
-"et les devices/racks posés dans cette zone en seront retirés (ils resteront "
-"dans leur local NetBox, mais ne seront plus placés sur le plan)."
+"Are you sure you want to unlink location \"%(location_name)s\" from zone "
+"%(number)s? Once saved, the \"Plan\" tab will disappear from this "
+"location's page, the zone number will reappear on the plan instead of its "
+"name, and the devices/racks placed in this zone will be removed from it "
+"(they will remain in their NetBox location, but will no longer be placed "
+"on the plan)."
 msgstr ""
-"Voulez-vous vraiment délier le local « %(location_name)s » de la zone %"
-"(number)s ? Une fois enregistré, l'onglet \"Plan\" disparaîtra de la page de "
-"ce local, le numéro de zone réapparaîtra sur le plan à la place de son nom, "
-"et les devices/racks posés dans cette zone en seront retirés (ils resteront "
-"dans leur local NetBox, mais ne seront plus placés sur le plan)."
+"Voulez-vous vraiment délier le local « %(location_name)s » de la zone "
+"%(number)s ? Une fois enregistré, l'onglet \"Plan\" disparaîtra de la "
+"page de ce local, le numéro de zone réapparaîtra sur le plan à la place "
+"de son nom, et les devices/racks posés dans cette zone en seront retirés "
+"(ils resteront dans leur local NetBox, mais ne seront plus placés sur le "
+"plan)."
 
-#: static/netbox_cadplan/js/plan_editor.js:1283
-msgid "Cliquez sur une zone du plan pour l'associer à un local."
+#: static/netbox_cadplan/js/plan_editor.js:1853
+msgid "Click a zone on the plan to associate it with a location."
 msgstr "Cliquez sur une zone du plan pour l'associer à un local."
 
-#: static/netbox_cadplan/js/plan_editor.js:1286
-msgid "Chargement des locaux…"
+#: static/netbox_cadplan/js/plan_editor.js:1856
+msgid "Loading locations…"
 msgstr "Chargement des locaux…"
 
-#: static/netbox_cadplan/js/plan_editor.js:1290
-msgid "Erreur lors du chargement des locaux."
+#: static/netbox_cadplan/js/plan_editor.js:1860
+msgid "Error loading locations."
 msgstr "Erreur lors du chargement des locaux."
 
-#: static/netbox_cadplan/js/plan_editor.js:1319
-msgid "%(saved)s association(s) enregistrée(s)."
+#: static/netbox_cadplan/js/plan_editor.js:1889
+#, python-format
+msgid "%(saved)s association(s) saved."
 msgstr "%(saved)s association(s) enregistrée(s)."
 
-#: static/netbox_cadplan/js/plan_editor.js:1325
-msgid "Erreur réseau lors de l'enregistrement."
+#: static/netbox_cadplan/js/plan_editor.js:1895
+msgid "Network error while saving."
 msgstr "Erreur réseau lors de l'enregistrement."
-
-#: static/netbox_cadplan/js/plan_editor.js:159
-msgid ""
-"%(unchanged)s zone(s) inchangée(s), %(removed)s zone(s) supprimée(s) "
-"(%(objects)s objet(s) posé(s) seront retirés), %(created)s nouvelle(s) "
-"zone(s)."
-msgstr ""
-"%(unchanged)s zone(s) inchangée(s), %(removed)s zone(s) supprimée(s) "
-"(%(objects)s objet(s) posé(s) seront retirés), %(created)s nouvelle(s) "
-"zone(s)."
-
-#: static/netbox_cadplan/js/plan_editor.js:174
-msgid "Appliquer"
-msgstr "Appliquer"
-
-#: static/netbox_cadplan/js/plan_editor.js:181
-msgid "Annuler"
-msgstr "Annuler"
