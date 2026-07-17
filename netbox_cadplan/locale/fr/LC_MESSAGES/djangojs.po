@@ -138,6 +138,51 @@ msgstr "Position du nom"
 msgid "Remove from plan"
 msgstr "Retirer du plan"
 
+#: static/netbox_cadplan/js/plan_editor.js:1631
+msgid "Activate the tool above the plan, then click the device to move."
+msgstr "Activez l'outil au-dessus du plan, puis cliquez sur l'appareil à déplacer."
+
+#: static/netbox_cadplan/js/plan_editor.js:1638 static/netbox_cadplan/js/plan_editor.js:1771
+msgid "Click the device you want to move."
+msgstr "Cliquez sur l'appareil que vous souhaitez déplacer."
+
+#: static/netbox_cadplan/js/plan_editor.js:1648
+msgid "Moving:"
+msgstr "Déplacement :"
+
+#: static/netbox_cadplan/js/plan_editor.js:1654
+msgid "Hover a wall or a device edge, then click to select it."
+msgstr "Survolez un mur ou le bord d'un appareil, puis cliquez pour le sélectionner."
+
+#: static/netbox_cadplan/js/plan_editor.js:1664
+msgid "Reference: a wall"
+msgstr "Référence : un mur"
+
+#: static/netbox_cadplan/js/plan_editor.js:1668
+#, python-format
+msgid "Reference: edge of %(name)s"
+msgstr "Référence : bord de %(name)s"
+
+#: static/netbox_cadplan/js/plan_editor.js:1677
+msgid "Distance (mm)"
+msgstr "Distance (mm)"
+
+#: static/netbox_cadplan/js/plan_editor.js:1709
+msgid "Enter a valid distance."
+msgstr "Saisissez une distance valide."
+
+#: static/netbox_cadplan/js/plan_editor.js:1713
+msgid "Distance must be zero or greater."
+msgstr "La distance doit être supérieure ou égale à zéro."
+
+#: static/netbox_cadplan/js/plan_editor.js:1740
+msgid "This position is not valid: the object would be outside the room or overlapping another zone."
+msgstr "Cette position n'est pas valide : l'objet se retrouverait hors de la pièce ou chevaucherait une autre zone."
+
+#: static/netbox_cadplan/js/plan_editor.js:1775
+msgid "This object cannot be positioned with this tool: its rotation must be 0°, 90°, 180° or 270°."
+msgstr "Cet objet ne peut pas être positionné avec cet outil : sa rotation doit être de 0°, 90°, 180° ou 270°."
+
 #: static/netbox_cadplan/js/plan_editor.js:1801
 #, python-format
 msgid "Zone %(number)s selected"

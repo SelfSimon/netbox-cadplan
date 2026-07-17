@@ -783,6 +783,14 @@
   // Cette marge ne change rien au rendu visuel, seulement à la zone cliquable.
   const HIT_PADDING_PX = 24;
 
+  // Couleur/épaisseur de la surbrillance de sélection d'un objet posé. #f59f00 (même
+  // teinte que COLORS.selected, utilisée pour les zones) est presque indiscernable du
+  // orange par défaut des rectangles (#fb8c00) — d'où un bleu net, tranchant à la fois
+  // avec l'orange des rects et le violet des cercles, plus un trait nettement plus épais
+  // (BASE_STROKE_PX ne fait qu'1px) pour que la sélection saute aux yeux à tout niveau de zoom.
+  const SELECTED_STROKE_COLOR = '#2196f3';
+  const SELECTED_STROKE_WIDTH_MULT = 3;
+
   function buildPlacedGroup(obj, mmPerPx, offsetX, offsetY, editable, stageScale) {
     const scale = mmPerPx || 1;
     const strokeWidthPx = BASE_STROKE_PX / (stageScale || 1);
@@ -794,20 +802,23 @@
     });
 
     let shapeNode;
+    let baseStroke;
     if (obj.shape === 'circle') {
+      baseStroke = '#9c27b0';
       const radius = ((obj.diameter_mm || 40) / scale) / 2;
       shapeNode = new Konva.Circle({
         radius: radius,
-        fill: 'rgba(156,39,176,0.25)', stroke: '#9c27b0', strokeWidth: strokeWidthPx,
+        fill: 'rgba(156,39,176,0.25)', stroke: baseStroke, strokeWidth: strokeWidthPx,
         hitStrokeWidth: hitStrokeWidthPx,
       });
     } else {
+      baseStroke = '#fb8c00';
       const w = (obj.width_mm || 40) / scale;
       const h = (obj.depth_mm || 40) / scale;
       shapeNode = new Konva.Rect({
         width: w, height: h, offsetX: w / 2, offsetY: h / 2,
         rotation: obj.rotation || 0,
-        fill: 'rgba(255,152,0,0.25)', stroke: '#fb8c00', strokeWidth: strokeWidthPx,
+        fill: 'rgba(255,152,0,0.25)', stroke: baseStroke, strokeWidth: strokeWidthPx,
         hitStrokeWidth: hitStrokeWidthPx,
       });
     }
@@ -823,18 +834,35 @@
     group.placedData = obj;
     group.shapeNode = shapeNode;
     group.labelNode = label;
+    group.baseStroke = baseStroke;
     return group;
+  }
+
+  // Bordure de surbrillance d'un objet posé sélectionné : couleur ET épaisseur changent
+  // (group.isSelected mémorisé pour que rescaleObjectGroups(), appelé à chaque cran de
+  // zoom, sache réappliquer la bonne épaisseur au lieu de revenir à l'épaisseur normale).
+  function setGroupSelected(group, isSelected) {
+    if (!group || !group.shapeNode) return;
+    group.isSelected = isSelected;
+    const stage = group.getStage();
+    const scale = (stage ? stage.scaleX() : 1) || 1;
+    group.shapeNode.stroke(isSelected ? SELECTED_STROKE_COLOR : group.baseStroke);
+    group.shapeNode.strokeWidth((BASE_STROKE_PX * (isSelected ? SELECTED_STROKE_WIDTH_MULT : 1)) / scale);
+    const layer = group.getLayer();
+    if (layer) layer.batchDraw();
   }
 
   // Réapplique BASE_STROKE_PX/BASE_FONT_PX à tous les objets posés en fonction du zoom
   // courant (appelé à chaque cran de zoom à la molette) : sans ça, le texte et les
   // bordures grossiraient/rétréciraient avec le contenu du plan au lieu de rester
-  // lisibles à taille d'écran constante.
+  // lisibles à taille d'écran constante. L'objet actuellement sélectionné (group.isSelected)
+  // garde son épaisseur de surbrillance au lieu de revenir à l'épaisseur normale.
   function rescaleObjectGroups(objectGroups, scale) {
     Object.keys(objectGroups).forEach(function (id) {
       const group = objectGroups[id];
       if (!group.shapeNode || !group.labelNode) return;
-      group.shapeNode.strokeWidth(BASE_STROKE_PX / scale);
+      const mult = group.isSelected ? SELECTED_STROKE_WIDTH_MULT : 1;
+      group.shapeNode.strokeWidth((BASE_STROKE_PX * mult) / scale);
       group.shapeNode.hitStrokeWidth(HIT_PADDING_PX / scale);
       group.labelNode.fontSize(BASE_FONT_PX / scale);
       positionLabel(group.labelNode, group.shapeNode, group.placedData.name_position || 'center', scale);
@@ -911,6 +939,67 @@
       const w = findNearestWall(x, y, poly, minSegmentLength);
       if (w && (!best || w.distance < best.distance)) best = w;
     });
+    return best;
+  }
+
+  // Cherche, autour de (localX, localY), le bord de référence le plus proche pour l'outil
+  // "Positionner par distance" (cf. initPositionTool) : soit un mur (segment orthogonal
+  // d'un des polygones de `wallPolygons`), soit le bord d'un autre objet posé dans
+  // `groups` (rectangle à rotation multiple de 90°, même règle d'éligibilité que
+  // attachWallMagnet.isEligible() — les cercles n'exposent pas de bord axé naturel et sont
+  // ignorés comme source de référence, même s'ils restent déplaçables par l'outil).
+  // Retourne le candidat le plus proche sous `toleranceCanvasPx`, sous la forme
+  // {distance, axis, coord, source: 'wall'|'device', segmentForHighlight: [a, b], ownerId?}
+  // (même forme {axis, coord} qu'un mur de findNearestWall, réutilisable telle quelle par
+  // flushPositionForWall), ou null si rien n'est à portée. `excludeGroupId` exclut l'objet
+  // en cours de déplacement ; `groupFilter(group)` restreint les objets candidats (ex.
+  // même zone que l'objet déplacé).
+  function findReferenceEdgeCandidate(localX, localY, toleranceCanvasPx, wallPolygons, groups, excludeGroupId, groupFilter) {
+    let best = null;
+
+    (wallPolygons || []).forEach(function (polygon) {
+      polygonEdges(polygon).forEach(function (edge) {
+        const a = edge[0], b = edge[1];
+        const dx = b[0] - a[0], dy = b[1] - a[1];
+        if (Math.hypot(dx, dy) < 1e-6) return;
+        const isHorizontal = Math.abs(dy) <= Math.abs(dx) * 0.05;
+        const isVertical = Math.abs(dx) <= Math.abs(dy) * 0.05;
+        if (!isHorizontal && !isVertical) return;
+        const dist = distanceToSegment(localX, localY, a, b);
+        if (dist > toleranceCanvasPx) return;
+        if (best && dist >= best.distance) return;
+        best = isHorizontal
+          ? { distance: dist, axis: 'y', coord: (a[1] + b[1]) / 2, source: 'wall', segmentForHighlight: [a, b] }
+          : { distance: dist, axis: 'x', coord: (a[0] + b[0]) / 2, source: 'wall', segmentForHighlight: [a, b] };
+      });
+    });
+
+    const excludeKey = String(excludeGroupId);
+    Object.keys(groups || {}).forEach(function (id) {
+      if (id === excludeKey) return;
+      const group = groups[id];
+      if (group.placedData.shape === 'circle') return;
+      const rotation = group.placedData.rotation || 0;
+      if (!isAxisAlignedRotation(rotation)) return;
+      if (groupFilter && !groupFilter(group)) return;
+      const { hw, hh } = rectHalfExtents(group.shapeNode, rotation);
+      const cx = group.x(), cy = group.y();
+      [
+        { axis: 'y', coord: cy - hh, a: [cx - hw, cy - hh], b: [cx + hw, cy - hh] }, // haut
+        { axis: 'y', coord: cy + hh, a: [cx - hw, cy + hh], b: [cx + hw, cy + hh] }, // bas
+        { axis: 'x', coord: cx - hw, a: [cx - hw, cy - hh], b: [cx - hw, cy + hh] }, // gauche
+        { axis: 'x', coord: cx + hw, a: [cx + hw, cy - hh], b: [cx + hw, cy + hh] }, // droite
+      ].forEach(function (e) {
+        const dist = distanceToSegment(localX, localY, e.a, e.b);
+        if (dist > toleranceCanvasPx) return;
+        if (best && dist >= best.distance) return;
+        best = {
+          distance: dist, axis: e.axis, coord: e.coord, source: 'device',
+          segmentForHighlight: [e.a, e.b], ownerId: group.placedData.id,
+        };
+      });
+    });
+
     return best;
   }
 
@@ -1444,6 +1533,353 @@
     return { show: show, clear: clear };
   }
 
+  // Outil modal "Positionner par distance" : on sélectionne un objet posé, un bord de
+  // référence (mur ou bord d'un autre objet), une distance en mm, puis l'objet est déplacé
+  // pour que son bord touche exactement cette distance du bord choisi (côté courant
+  // conservé — cf. flushPositionForWall). Contrairement au reste de l'éditeur (toujours
+  // actif, non modal), c'est le seul outil qui suspend temporairement le glissé et la
+  // sélection habituels pendant qu'il est actif (cf. les gardes positionTool.isActive()
+  // dans addObjectGroup/clickTargets de initCanvas() et initLocationCanvas()).
+  //
+  // `deps` : { stage, objectsLayer, getObjectGroups(), getScale(), mmPerPx, urlFor,
+  // updateUrlTemplate, offsetX, offsetY, getWallPolygons(moverGroup),
+  // getMoverPolygon(moverGroup), getExclusionPolygons(moverGroup),
+  // isSameZoneAsMover(group, moverGroup), toggleButtonId, panelId }.
+  const POSITION_TOOL_HOVER_COLOR = '#00bcd4';
+  const POSITION_TOOL_CONFIRM_COLOR = '#00838f';
+  const EDGE_HOVER_TOLERANCE_PX = 12;
+
+  function initPositionTool(deps) {
+    const toggleButton = document.getElementById(deps.toggleButtonId);
+    const panel = document.getElementById(deps.panelId);
+    if (!toggleButton || !panel) return null;
+
+    let active = false;
+    let step = 'idle'; // 'idle' | 'pick-device' | 'pick-edge' | 'enter-distance'
+    let mover = null;
+    let confirmedEdge = null;
+    let moverHighlightNode = null;
+    let hoverEdgeNode = null;
+    let edgeConfirmNode = null;
+    let keydownHandler = null;
+
+    function destroyNode(node) {
+      if (node) node.destroy();
+      return null;
+    }
+
+    function tolerancePx() {
+      return EDGE_HOVER_TOLERANCE_PX / deps.getScale();
+    }
+
+    function toLocalPoint(pos) {
+      return deps.objectsLayer.getAbsoluteTransform().copy().invert().point(pos);
+    }
+
+    function moverHalfExtents() {
+      if (mover.placedData.shape === 'circle') {
+        const r = mover.shapeNode.radius();
+        return { hw: r, hh: r };
+      }
+      return rectHalfExtents(mover.shapeNode, mover.placedData.rotation || 0);
+    }
+
+    function currentReferenceCandidate() {
+      const pointer = deps.stage.getPointerPosition();
+      if (!pointer) return null;
+      const local = toLocalPoint(pointer);
+      return findReferenceEdgeCandidate(
+        local.x, local.y, tolerancePx(),
+        deps.getWallPolygons(mover), deps.getObjectGroups(), mover.placedData.id,
+        function (g) { return deps.isSameZoneAsMover(g, mover); }
+      );
+    }
+
+    function drawMoverHighlight() {
+      moverHighlightNode = destroyNode(moverHighlightNode);
+      const rotation = mover.placedData.rotation || 0;
+      const pad = 4 / deps.getScale();
+      const strokeWidth = 2 / deps.getScale();
+      if (mover.placedData.shape === 'circle') {
+        moverHighlightNode = new Konva.Circle({
+          x: mover.x(), y: mover.y(), radius: mover.shapeNode.radius() + pad,
+          stroke: COLORS.selected.stroke, strokeWidth: strokeWidth, listening: false,
+        });
+      } else {
+        const { hw, hh } = localHalfExtents(mover);
+        moverHighlightNode = new Konva.Rect({
+          x: mover.x(), y: mover.y(),
+          width: (hw + pad) * 2, height: (hh + pad) * 2,
+          offsetX: hw + pad, offsetY: hh + pad,
+          rotation: rotation,
+          stroke: COLORS.selected.stroke, strokeWidth: strokeWidth, listening: false,
+        });
+      }
+      deps.objectsLayer.add(moverHighlightNode);
+      deps.objectsLayer.batchDraw();
+    }
+
+    function drawEdgeLine(segment, color, dashed) {
+      const node = new Konva.Line({
+        points: [segment[0][0], segment[0][1], segment[1][0], segment[1][1]],
+        stroke: color, strokeWidth: 3 / deps.getScale(),
+        listening: false,
+      });
+      if (dashed) node.dash([6 / deps.getScale(), 4 / deps.getScale()]);
+      deps.objectsLayer.add(node);
+      return node;
+    }
+
+    // Écart courant (mm) entre le bord pertinent du mover et confirmedEdge — valeur de
+    // départ affichée dans le champ de distance, pratique pour ajuster une valeur proche
+    // plutôt que de repartir de zéro.
+    function currentGapMm() {
+      const { hw, hh } = moverHalfExtents();
+      const half = confirmedEdge.axis === 'y' ? hh : hw;
+      const center = confirmedEdge.axis === 'y' ? mover.y() : mover.x();
+      const gapPx = Math.max(0, Math.abs(center - confirmedEdge.coord) - half);
+      return gapPx * deps.mmPerPx;
+    }
+
+    function addCancelButton() {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-outline-secondary btn-sm mt-2';
+      btn.textContent = gettext('Cancel');
+      btn.addEventListener('click', function () { setActive(false); });
+      panel.appendChild(btn);
+    }
+
+    function renderPanel() {
+      panel.innerHTML = '';
+
+      if (step === 'idle') {
+        const p = document.createElement('p');
+        p.className = 'text-muted mb-0';
+        p.textContent = gettext('Activate the tool above the plan, then click the device to move.');
+        panel.appendChild(p);
+        return;
+      }
+
+      if (step === 'pick-device') {
+        const p = document.createElement('p');
+        p.textContent = gettext('Click the device you want to move.');
+        panel.appendChild(p);
+        addCancelButton();
+        return;
+      }
+
+      if (step === 'pick-edge') {
+        const p1 = document.createElement('p');
+        p1.className = 'mb-1';
+        const strong = document.createElement('strong');
+        strong.textContent = gettext('Moving:') + ' ';
+        p1.appendChild(strong);
+        p1.appendChild(document.createTextNode(mover.placedData.name || ''));
+        panel.appendChild(p1);
+        const p2 = document.createElement('p');
+        p2.className = 'text-muted';
+        p2.textContent = gettext('Hover a wall or a device edge, then click to select it.');
+        panel.appendChild(p2);
+        addCancelButton();
+        return;
+      }
+
+      // step === 'enter-distance'
+      const refP = document.createElement('p');
+      refP.className = 'mb-1';
+      if (confirmedEdge.source === 'wall') {
+        refP.textContent = gettext('Reference: a wall');
+      } else {
+        const ownerGroup = deps.getObjectGroups()[confirmedEdge.ownerId];
+        refP.textContent = interpolate(
+          gettext('Reference: edge of %(name)s'),
+          { name: ownerGroup ? (ownerGroup.placedData.name || '') : '' },
+          true
+        );
+      }
+      panel.appendChild(refP);
+
+      const label = document.createElement('label');
+      label.className = 'form-label';
+      label.textContent = gettext('Distance (mm)');
+      panel.appendChild(label);
+
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.step = 'any';
+      input.min = '0';
+      input.className = 'form-control mb-2';
+      input.value = currentGapMm().toFixed(1);
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); applyDistance(input, feedback); }
+      });
+      panel.appendChild(input);
+
+      const feedback = document.createElement('div');
+      feedback.className = 'text-danger small mb-2';
+      panel.appendChild(feedback);
+
+      const applyBtn = document.createElement('button');
+      applyBtn.type = 'button';
+      applyBtn.className = 'btn btn-primary btn-sm me-2';
+      applyBtn.textContent = gettext('Apply');
+      applyBtn.addEventListener('click', function () { applyDistance(input, feedback); });
+      panel.appendChild(applyBtn);
+
+      addCancelButton();
+    }
+
+    function applyDistance(input, feedback) {
+      feedback.textContent = '';
+      const mm = parseFloat(input.value);
+      if (Number.isNaN(mm)) {
+        feedback.textContent = gettext('Enter a valid distance.');
+        return;
+      }
+      if (mm < 0) {
+        feedback.textContent = gettext('Distance must be zero or greater.');
+        return;
+      }
+
+      const requestedGapPx = mm / deps.mmPerPx;
+      const rotation = mover.placedData.rotation || 0;
+      const { hw, hh } = moverHalfExtents();
+      // Réutilisation directe de flushPositionForWall (déplacement bord-à-bord, côté
+      // courant conservé) : confirmedEdge, mur ou bord de device, a la même forme
+      // {axis, coord} qu'un mur ordinaire — aucune adaptation n'est nécessaire.
+      const target = flushPositionForWall(mover.x(), mover.y(), hw, hh, confirmedEdge, requestedGapPx);
+
+      // Validation avec la marge structurelle habituelle (pas requestedGapPx : cette
+      // valeur ne concerne que le bord de référence choisi, pas le confinement de l'objet
+      // dans sa propre pièce) et les demi-extents LOCALES non tournées — mêmes règles que
+      // makeDragBoundFunc/attachWallMagnet (cf. leurs commentaires sur ce point).
+      const validationClearance = resolvedClearance(deps.getScale);
+      const { hw: localHw, hh: localHh } = localHalfExtents(mover);
+      const roomPolygon = deps.getMoverPolygon(mover);
+      const exclusions = deps.getExclusionPolygons(mover) || [];
+      const valid = !!target && !!roomPolygon &&
+        isFootprintInsidePolygon(mover.placedData.shape, target.x, target.y, localHw, localHh, rotation, roomPolygon, validationClearance) &&
+        exclusions.every(function (excl) {
+          return !footprintOverlapsPolygon(mover.placedData.shape, target.x, target.y, localHw, localHh, rotation, excl, validationClearance);
+        });
+
+      if (!valid) {
+        feedback.textContent = gettext('This position is not valid: the object would be outside the room or overlapping another zone.');
+        return;
+      }
+
+      mover.x(target.x);
+      mover.y(target.y);
+      mover.getLayer().draw();
+      mover.placedData.x = target.x + deps.offsetX;
+      mover.placedData.y = target.y + deps.offsetY;
+      persistPlacedObject(deps.urlFor(deps.updateUrlTemplate, mover.placedData.id), mover.placedData, { rotation: mover.placedData.rotation });
+
+      moverHighlightNode = destroyNode(moverHighlightNode);
+      edgeConfirmNode = destroyNode(edgeConfirmNode);
+      deps.objectsLayer.batchDraw();
+      mover = null;
+      confirmedEdge = null;
+      step = 'pick-device';
+      renderPanel();
+    }
+
+    // Renvoie true si ce clic a été consommé par l'étape "pick-device" (sélection du
+    // mover ou avertissement de rotation) — le groupe appelant doit alors annuler le
+    // bubbling Konva vers le stage, sinon ce même clic atteint aussi onStageClick juste
+    // après le passage à step = 'pick-edge' et confirmerait aussitôt un bord de référence
+    // sous le curseur (fréquent : un appareil est souvent proche d'un mur).
+    function handleObjectClick(group) {
+      if (!active || step !== 'pick-device') return false;
+      const rotation = group.placedData.rotation || 0;
+      if (group.placedData.shape !== 'circle' && !isAxisAlignedRotation(rotation)) {
+        panel.innerHTML = '';
+        const p = document.createElement('p');
+        p.textContent = gettext('Click the device you want to move.');
+        panel.appendChild(p);
+        const warn = document.createElement('p');
+        warn.className = 'text-danger small';
+        warn.textContent = gettext('This object cannot be positioned with this tool: its rotation must be 0°, 90°, 180° or 270°.');
+        panel.appendChild(warn);
+        addCancelButton();
+        return true;
+      }
+      mover = group;
+      step = 'pick-edge';
+      drawMoverHighlight();
+      renderPanel();
+      return true;
+    }
+
+    function onMouseMove() {
+      if (!active || step !== 'pick-edge') return;
+      const candidate = currentReferenceCandidate();
+      hoverEdgeNode = destroyNode(hoverEdgeNode);
+      if (candidate) hoverEdgeNode = drawEdgeLine(candidate.segmentForHighlight, POSITION_TOOL_HOVER_COLOR, true);
+      deps.objectsLayer.batchDraw();
+    }
+
+    function onStageClick() {
+      if (!active || step !== 'pick-edge') return;
+      const candidate = currentReferenceCandidate();
+      if (!candidate) return;
+      confirmedEdge = candidate;
+      hoverEdgeNode = destroyNode(hoverEdgeNode);
+      edgeConfirmNode = destroyNode(edgeConfirmNode);
+      edgeConfirmNode = drawEdgeLine(candidate.segmentForHighlight, POSITION_TOOL_CONFIRM_COLOR, false);
+      deps.objectsLayer.batchDraw();
+      step = 'enter-distance';
+      renderPanel();
+    }
+
+    function onKeyDown(e) {
+      if (e.key === 'Escape' && active) setActive(false);
+    }
+
+    function setActive(next) {
+      if (active === next) return;
+      active = next;
+      if (active) {
+        step = 'pick-device';
+        mover = null;
+        confirmedEdge = null;
+        toggleButton.classList.add('active', 'btn-primary');
+        toggleButton.classList.remove('btn-outline-secondary');
+        deps.stage.container().style.cursor = 'crosshair';
+        deps.stage.on('mousemove.postool', onMouseMove);
+        deps.stage.on('click.postool', onStageClick);
+        keydownHandler = onKeyDown;
+        document.addEventListener('keydown', keydownHandler);
+      } else {
+        step = 'idle';
+        mover = null;
+        confirmedEdge = null;
+        moverHighlightNode = destroyNode(moverHighlightNode);
+        hoverEdgeNode = destroyNode(hoverEdgeNode);
+        edgeConfirmNode = destroyNode(edgeConfirmNode);
+        deps.objectsLayer.batchDraw();
+        toggleButton.classList.remove('active', 'btn-primary');
+        toggleButton.classList.add('btn-outline-secondary');
+        deps.stage.container().style.cursor = '';
+        deps.stage.off('.postool');
+        if (keydownHandler) {
+          document.removeEventListener('keydown', keydownHandler);
+          keydownHandler = null;
+        }
+      }
+      renderPanel();
+    }
+
+    toggleButton.addEventListener('click', function () { setActive(!active); });
+    renderPanel();
+
+    return {
+      isActive: function () { return active; },
+      handleObjectClick: handleObjectClick,
+    };
+  }
+
   // Dessine les zones sur le canvas Konva et renvoie une petite API pour que
   // initAssociationPanel() puisse réagir aux clics et recolorer les zones.
   function initCanvas() {
@@ -1501,7 +1937,26 @@
     const objectsLayer = new Konva.Layer();
     stage.add(objectsLayer);
     const objectGroups = {}; // placed object id -> Konva.Group
-    let onObjectSelect = null; // callback(group) défini par initPlacedObjectsUI
+    let onObjectSelect = null; // callback(group|null) défini par initPlacedObjectsUI
+    let positionTool = null; // affecté plus bas (cf. initPositionTool) ; lu par closure
+
+    let selectedGroup = null;
+    function selectObjectGroup(group) {
+      if (selectedGroup === group) return;
+      if (selectedGroup) setGroupSelected(selectedGroup, false);
+      selectedGroup = group;
+      if (selectedGroup) setGroupSelected(selectedGroup, true);
+      if (onObjectSelect) onObjectSelect(selectedGroup);
+    }
+
+    // Un clic qui n'atteint aucune forme (device/rack, zone...) touche directement le
+    // stage (Konva.Stage n'a pas de fond opaque écoutant les clics) : c'est le seul cas
+    // fiable pour détecter "l'utilisateur a cliqué en dehors" et désélectionner.
+    stage.on('click tap', function (e) {
+      if (e.target !== stage) return;
+      if (positionTool && positionTool.isActive()) return;
+      selectObjectGroup(null);
+    });
 
     const zoneByNumber = {};
     zones.forEach(function (z) { zoneByNumber[z.number] = z; });
@@ -1527,8 +1982,16 @@
       const group = buildPlacedGroup(obj, mmPerPx, 0, 0, true, stage.scaleX());
       group.dragBoundFunc(makeDragBoundFunc(group, function () { return zonePolygon(obj.zone_number); }, getScale, getZoneHoles));
       const magnet = attachWallMagnet(group, function () { return zonePolygon(obj.zone_number); }, getScale, null, getZoneHoles);
-      group.on('click tap', function () {
-        if (onObjectSelect) onObjectSelect(group);
+      group.on('click tap', function (e) {
+        if (positionTool && positionTool.isActive()) {
+          if (positionTool.handleObjectClick(group)) e.cancelBubble = true;
+          return;
+        }
+        e.cancelBubble = true;
+        selectObjectGroup(group);
+      });
+      group.on('dragstart', function () {
+        if (positionTool && positionTool.isActive()) group.stopDrag();
       });
       group.on('dragend', function () {
         magnet.finalize();
@@ -1543,7 +2006,7 @@
       attachRightClickRotate(group, function () { return zonePolygon(obj.zone_number); }, function () {
         obj.rotation = group.shapeNode.rotation();
         persistPlacedObject(urlFor(updateUrlTemplate, obj.id), obj, { rotation: obj.rotation });
-        if (onObjectSelect) onObjectSelect(group);
+        selectObjectGroup(group);
       });
       objectsLayer.add(group);
       objectGroups[obj.id] = group;
@@ -1794,6 +2257,10 @@
 
       clickTargets.forEach(function (target) {
         target.on('click', function () {
+          if (positionTool && positionTool.isActive()) return;
+          // Un clic sur la zone (mais pas sur un device/rack posé dessus, qui a sa
+          // propre cible de clic au-dessus) compte comme "en dehors" de tout objet posé.
+          selectObjectGroup(null);
           selectedNumber = selectedNumber === zone.number ? null : zone.number;
           repaint();
           if (onSelect) onSelect(selectedNumber === null ? null : zone);
@@ -1811,6 +2278,27 @@
       Object.keys(objectGroups).forEach(function (id) { objectGroups[id].labelNode.fill(fill); });
       layer.batchDraw();
       objectsLayer.batchDraw();
+    });
+
+    positionTool = initPositionTool({
+      stage: stage,
+      objectsLayer: objectsLayer,
+      getObjectGroups: function () { return objectGroups; },
+      getScale: getScale,
+      mmPerPx: mmPerPx,
+      urlFor: urlFor,
+      updateUrlTemplate: updateUrlTemplate,
+      offsetX: 0,
+      offsetY: 0,
+      getWallPolygons: function (mv) {
+        const poly = zonePolygon(mv.placedData.zone_number);
+        return poly ? [poly].concat(holesOf[mv.placedData.zone_number] || []) : [];
+      },
+      getMoverPolygon: function (mv) { return zonePolygon(mv.placedData.zone_number); },
+      getExclusionPolygons: function (mv) { return holesOf[mv.placedData.zone_number] || []; },
+      isSameZoneAsMover: function (g, mv) { return g.placedData.zone_number === mv.placedData.zone_number; },
+      toggleButtonId: 'np-position-tool-btn',
+      panelId: 'np-position-tool-panel',
     });
 
     return {
@@ -1832,7 +2320,12 @@
       addPlacedObject: function (obj) { return addObjectGroup(obj); },
       removePlacedObject: function (id) {
         const group = objectGroups[id];
-        if (group) { group.destroy(); delete objectGroups[id]; objectsLayer.draw(); }
+        if (group) {
+          if (selectedGroup === group) selectObjectGroup(null);
+          group.destroy();
+          delete objectGroups[id];
+          objectsLayer.draw();
+        }
       },
       // Le serveur retire les devices/racks posés dans une zone qui vient d'être déliée
       // d'un local (cf. plan_save_associations) : on reflète ça immédiatement dans
@@ -1841,6 +2334,7 @@
         Object.keys(objectGroups).forEach(function (id) {
           const group = objectGroups[id];
           if (group.placedData.zone_number === zoneNumber) {
+            if (selectedGroup === group) selectObjectGroup(null);
             group.destroy();
             delete objectGroups[id];
           }
@@ -2025,6 +2519,7 @@
     });
 
     canvas.onObjectSelected(function (group) {
+      if (!group) { properties.clear(); return; }
       properties.show(group, {
         update: canvas.urlFor(canvas.updateUrlTemplate, group.placedData.id),
         remove: canvas.urlFor(canvas.removeUrlTemplate, group.placedData.id),
@@ -2166,9 +2661,25 @@
     const objectsLayer = new Konva.Layer();
     stage.add(objectsLayer);
     const objectGroups = {};
-    let onObjectSelect = null;
+    let onObjectSelect = null; // callback(group|null)
+    let positionTool = null; // affecté plus bas (cf. initPositionTool) ; lu par closure
     const getScale = function () { return stage.scaleX(); };
     const getLocalPolygon = function () { return localPolygon; };
+
+    let selectedGroup = null;
+    function selectObjectGroup(group) {
+      if (selectedGroup === group) return;
+      if (selectedGroup) setGroupSelected(selectedGroup, false);
+      selectedGroup = group;
+      if (selectedGroup) setGroupSelected(selectedGroup, true);
+      if (onObjectSelect) onObjectSelect(selectedGroup);
+    }
+
+    stage.on('click tap', function (e) {
+      if (e.target !== stage) return;
+      if (positionTool && positionTool.isActive()) return;
+      selectObjectGroup(null);
+    });
 
     // Snap targets : bords des zones internes (pour l'aimantation — surfaces de mur réelles).
     const getLocalInnerPolygons = localInnerPolygons.length > 0
@@ -2187,8 +2698,16 @@
       const group = buildPlacedGroup(obj, mmPerPx, offsetX, offsetY, true, stage.scaleX());
       group.dragBoundFunc(makeDragBoundFunc(group, getLocalPolygon, getScale, getLocalExclusionPolygons));
       const magnet = attachWallMagnet(group, getLocalPolygon, getScale, getLocalInnerPolygons, getLocalExclusionPolygons);
-      group.on('click tap', function () {
-        if (onObjectSelect) onObjectSelect(group);
+      group.on('click tap', function (e) {
+        if (positionTool && positionTool.isActive()) {
+          if (positionTool.handleObjectClick(group)) e.cancelBubble = true;
+          return;
+        }
+        e.cancelBubble = true;
+        selectObjectGroup(group);
+      });
+      group.on('dragstart', function () {
+        if (positionTool && positionTool.isActive()) group.stopDrag();
       });
       group.on('dragend', function () {
         magnet.finalize();
@@ -2199,7 +2718,7 @@
       attachRightClickRotate(group, getLocalPolygon, function () {
         obj.rotation = group.shapeNode.rotation();
         persistPlacedObject(urlFor(updateUrlTemplate, obj.id), obj, { rotation: obj.rotation });
-        if (onObjectSelect) onObjectSelect(group);
+        selectObjectGroup(group);
       });
       objectsLayer.add(group);
       objectGroups[obj.id] = group;
@@ -2224,7 +2743,12 @@
       addPlacedObject: function (obj) { return addObjectGroup(obj); },
       removePlacedObject: function (id) {
         const group = objectGroups[id];
-        if (group) { group.destroy(); delete objectGroups[id]; objectsLayer.draw(); }
+        if (group) {
+          if (selectedGroup === group) selectObjectGroup(null);
+          group.destroy();
+          delete objectGroups[id];
+          objectsLayer.draw();
+        }
       },
       trySnap: trySnap,
       trySnapOutside: trySnapOutside,
@@ -2262,6 +2786,7 @@
     if (propertiesContainer) {
       const properties = initPropertiesPanel(propertiesContainer);
       canvasApi.onObjectSelected(function (group) {
+        if (!group) { properties.clear(); return; }
         properties.show(group, {
           update: canvasApi.urlFor(canvasApi.updateUrlTemplate, group.placedData.id),
           remove: canvasApi.urlFor(canvasApi.removeUrlTemplate, group.placedData.id),
@@ -2281,5 +2806,23 @@
         });
       });
     }
+
+    positionTool = initPositionTool({
+      stage: stage,
+      objectsLayer: objectsLayer,
+      getObjectGroups: function () { return objectGroups; },
+      getScale: getScale,
+      mmPerPx: mmPerPx,
+      urlFor: urlFor,
+      updateUrlTemplate: updateUrlTemplate,
+      offsetX: offsetX,
+      offsetY: offsetY,
+      getWallPolygons: function () { return [localPolygon].concat(localInnerPolygons); },
+      getMoverPolygon: function () { return localPolygon; },
+      getExclusionPolygons: function () { return localInnerPolygons; },
+      isSameZoneAsMover: function () { return true; },
+      toggleButtonId: 'np-loc-position-tool-btn',
+      panelId: 'np-loc-position-tool-panel',
+    });
   }
 })();

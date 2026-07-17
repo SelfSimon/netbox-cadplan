@@ -194,6 +194,17 @@ msgstr "Configurer la forme"
 msgid "Location plan — zone %(number)s"
 msgstr "Plan du local — zone %(number)s"
 
+#: templates/netbox_cadplan/location_tab.html:13 templates/netbox_cadplan/location_tab.html:58
+#: templates/netbox_cadplan/plan.html:109 templates/netbox_cadplan/plan.html:149
+#: templates/netbox_cadplan/plan_tab.html:32 templates/netbox_cadplan/plan_tab.html:72
+msgid "Position by distance"
+msgstr "Positionner par distance"
+
+#: templates/netbox_cadplan/location_tab.html:60 templates/netbox_cadplan/plan.html:151
+#: templates/netbox_cadplan/plan_tab.html:74
+msgid "Activate the tool above the plan, then click the device to move."
+msgstr "Activez l'outil au-dessus du plan, puis cliquez sur l'appareil à déplacer."
+
 #: templates/netbox_cadplan/location_tab.html:33
 #: templates/netbox_cadplan/plan.html:144 templates/netbox_cadplan/plan_tab.html:67
 msgid "Objects to place"
