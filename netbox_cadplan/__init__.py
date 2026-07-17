@@ -14,7 +14,7 @@ class NetBoxCadPlanConfig(PluginConfig):
     version = "0.1.0"
     author = "Simon Lacroix"
     author_email = "simonlacroix@live.ca"
-    base_url = "plan"
+    base_url = "cadplan"
     min_version = "4.6.0"
     max_version = "4.6.99"
     required_settings = []

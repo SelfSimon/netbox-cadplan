@@ -397,7 +397,7 @@ def _location_is_valid_for_plan(location, plan):
 @login_required
 @require_GET
 def plan_layers(request, pk):
-    """GET /plugins/plan/plans/<pk>/layers/ -> {"layers": [...]}"""
+    """GET /plugins/cadplan/plans/<pk>/layers/ -> {"layers": [...]}"""
     plan = get_object_or_404(Plan, pk=pk)
     if not request.user.has_perm("netbox_cadplan.view_plan"):
         return HttpResponseForbidden()
@@ -416,7 +416,7 @@ def plan_layers(request, pk):
 @require_GET
 def plan_layer_preview(request, pk):
     """
-    GET /plugins/plan/plans/<pk>/layer-preview/?layer=<name>
+    GET /plugins/cadplan/plans/<pk>/layer-preview/?layer=<name>
     Aperçu en lecture seule de toute la géométrie filiforme d'un calque
     (murs, annotations, délimitations ouvertes ou fermées — normalisée en
     pixels canvas), sans rien persister. Volontairement plus permissif que
@@ -457,7 +457,7 @@ def _location_display(location, root):
 @require_GET
 def plan_locations(request, pk):
     """
-    GET /plugins/plan/plans/<pk>/locations/
+    GET /plugins/cadplan/plans/<pk>/locations/
     Si le plan a une Location racine : tous ses descendants (à n'importe quelle
     profondeur), pour peupler le menu d'association. Sinon (plan couvrant tout un
     site) : toutes les Locations de ce site. L'API NetBox /api/dcim/locations/ ne
@@ -539,7 +539,7 @@ def _layer_name_and_polygons_from_request(plan, request):
 @require_POST
 def plan_confirm_layer_preview(request, pk):
     """
-    POST /plugins/plan/plans/<pk>/confirm-layer-preview/
+    POST /plugins/cadplan/plans/<pk>/confirm-layer-preview/
     body: {"layer_name": "..."}
     Calcule (sans rien écrire en base) le résumé de ce que produirait
     plan_confirm_layer() sur ce calque : nombre de zones inchangées /
@@ -579,7 +579,7 @@ def plan_confirm_layer_preview(request, pk):
 @require_POST
 def plan_confirm_layer(request, pk):
     """
-    POST /plugins/plan/plans/<pk>/confirm-layer/  body: {"layer_name": "..."}
+    POST /plugins/cadplan/plans/<pk>/confirm-layer/  body: {"layer_name": "..."}
     Fixe le calque sélectionné et réconcilie les PlanZone avec les
     polygones fermés de ce calque (normalisés en pixels canvas) : une zone
     existante dont le tracé DXF natif (source_polygon) correspond toujours
@@ -665,7 +665,7 @@ def plan_confirm_layer(request, pk):
 @require_POST
 def plan_save_associations(request, pk):
     """
-    POST /plugins/plan/plans/<pk>/save-associations/
+    POST /plugins/cadplan/plans/<pk>/save-associations/
     body: {"associations": [{"zone_number": 1, "location_id": 5}, ...]}
     Un location_id null/absent désassocie la zone.
     """
@@ -775,7 +775,7 @@ def _pickable_objects_for_locations(locations):
 @require_GET
 def zone_pickable_objects(request, zone_pk):
     """
-    GET /plugins/plan/zones/<zone_pk>/pickable-objects/
+    GET /plugins/cadplan/zones/<zone_pk>/pickable-objects/
     Racks/Devices non rackés du local associé à cette zone, non encore placés.
     """
     zone = get_object_or_404(PlanZone, pk=zone_pk)
@@ -791,7 +791,7 @@ def zone_pickable_objects(request, zone_pk):
 @require_GET
 def plan_pickable_objects(request, pk):
     """
-    GET /plugins/plan/plans/<pk>/pickable-objects/
+    GET /plugins/cadplan/plans/<pk>/pickable-objects/
     Racks/Devices non rackés de tous les locaux candidats du plan (descendants de sa
     Location racine, ou tous les locaux du site si le plan n'a pas de Location), non
     encore placés. Chaque entrée porte le numéro de la zone où elle doit être déposée
@@ -823,7 +823,7 @@ def plan_pickable_objects(request, pk):
 @require_GET
 def plan_export_dxf(request, pk):
     """
-    GET /plugins/plan/plans/<pk>/export-dxf/
+    GET /plugins/cadplan/plans/<pk>/export-dxf/
     Télécharge le DXF d'origine du plan, complété d'un nouveau calque
     (utils.DEVICE_EXPORT_LAYER) contenant les Devices/Racks posés sur le plan, à leur
     position réelle (transformation inverse de celle utilisée à l'import).
@@ -899,7 +899,7 @@ def plan_export_dxf(request, pk):
 @require_POST
 def place_object(request, zone_pk):
     """
-    POST /plugins/plan/zones/<zone_pk>/place/
+    POST /plugins/cadplan/zones/<zone_pk>/place/
     body: {"object_type": "dcim.device", "object_id": 5}
     Crée le PlacedObject au centre de la bounding box du polygone de la zone.
     """
@@ -967,7 +967,7 @@ def place_object(request, zone_pk):
 @require_POST
 def update_placed_object(request, pk):
     """
-    POST /plugins/plan/placed-objects/<pk>/update/
+    POST /plugins/cadplan/placed-objects/<pk>/update/
     body: {"x": .., "y": .., "rotation": .., "snap_to_wall": ..,
     "outside_wall": .., "name_position": ..}
     L'aimantation au mur (intérieure ou extérieure) est calculée côté JS ;
@@ -1013,7 +1013,7 @@ def update_placed_object(request, pk):
 @login_required
 @require_POST
 def remove_placed_object(request, pk):
-    """POST /plugins/plan/placed-objects/<pk>/remove/ : retire l'objet du plan."""
+    """POST /plugins/cadplan/placed-objects/<pk>/remove/ : retire l'objet du plan."""
     placed = get_object_or_404(PlacedObject, pk=pk)
     if not request.user.has_perm("netbox_cadplan.delete_placedobject"):
         return HttpResponseForbidden()
