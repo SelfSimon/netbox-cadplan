@@ -48,7 +48,8 @@ class PlanForm(NetBoxModelForm):
         location = cleaned_data.get("location")
         if site and location and location.site_id != site.id:
             self.add_error(
-                "location", _("The selected location does not belong to the chosen site.")
+                "location",
+                _("The selected location does not belong to the chosen site."),
             )
         return cleaned_data
 

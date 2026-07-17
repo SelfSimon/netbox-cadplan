@@ -96,7 +96,10 @@ def _serialize_pickable(obj):
         # (cf. DeviceTypePlanShapeEditView) pour éviter à l'utilisateur de devoir
         # retrouver le type d'appareil lui-même.
         "configure_url": (
-            reverse("dcim:devicetype_plan_shape_edit", kwargs={"pk": obj.device_type_id})
+            reverse(
+                "dcim:devicetype_plan_shape_edit",
+                kwargs={"pk": obj.device_type_id},
+            )
             if shape is None and isinstance(obj, Device)
             else None
         ),
@@ -442,7 +445,9 @@ def plan_layer_preview(request, pk):
         )
     layer_name = (request.GET.get("layer") or "").strip()
     if not layer_name:
-        return JsonResponse({"error": _("The layer parameter is required.")}, status=400)
+        return JsonResponse(
+            {"error": _("The layer parameter is required.")}, status=400
+        )
     try:
         strokes = get_layer_geometry(plan.dxf_file.path, layer_name)
     except DxfReadError as exc:
@@ -942,10 +947,10 @@ def place_object(request, zone_pk):
 
     obj = get_object_or_404(content_type.model_class(), pk=object_id)
     if obj.location_id != zone.location_id:
-        return JsonResponse(
-            {"error": _("This object does not belong to the location associated with this zone.")},
-            status=400,
+        error = _(
+            "This object does not belong to the location associated with this zone."
         )
+        return JsonResponse({"error": error}, status=400)
     if _resolve_shape_mm(obj) is None:
         return JsonResponse(
             {
