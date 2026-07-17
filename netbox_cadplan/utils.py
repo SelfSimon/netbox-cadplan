@@ -13,12 +13,12 @@ from ezdxf import recover
 
 
 class DxfReadError(Exception):
-    """Levée quand un fichier DXF/DWG ne peut pas être interprété par ezdxf."""
+    """Raised when a DXF/DWG file cannot be parsed by ezdxf."""
 
 
 def _is_dwg(filepath):
-    """DWG magic bytes : tous les fichiers DWG commencent par 'AC' suivi
-    d'un numéro de version."""
+    """DWG magic bytes: all DWG files start with 'AC' followed by a
+    version number."""
     try:
         with open(filepath, "rb") as f:
             return f.read(2) == b"AC"
@@ -28,9 +28,9 @@ def _is_dwg(filepath):
 
 def _convert_dwg_to_dxf(dwg_path):
     """
-    Convertit un fichier DWG en DXF temporaire via dwg2dxf (libredwg, copié depuis
-    Debian Bookworm dans l'image). Retourne le chemin du DXF temporaire — l'appelant
-    DOIT le supprimer après usage. Le fichier temporaire est supprimé en cas d'erreur.
+    Converts a DWG file to a temporary DXF via dwg2dxf (libredwg, copied from
+    Debian Bookworm into the image). Returns the path to the temporary DXF — the
+    caller MUST delete it after use. The temporary file is deleted on error.
     """
     tmp = tempfile.NamedTemporaryFile(suffix=".dxf", delete=False)
     tmp.close()
@@ -91,14 +91,14 @@ def _read_dxf_uncached(filepath):
         raise DxfReadError(_("The file could not be opened.")) from exc
 
 
-# Parser un DXF/DWG signifie construire un objet Python pour chaque entité du
-# dessin (potentiellement des dizaines de milliers) même pour une simple liste de
-# calques — et pour un DWG, le convertir d'abord via le sous-processus dwg2dxf.
-# get_dxf_layers/get_layer_geometry/get_layer_polygons/compute_mm_per_px sont
-# tous en lecture seule sur le Document retourné (l'export DXF construit son
-# propre ezdxf.new() séparé, cf. export_plan_dxf), donc partager un même
-# Document parsé une fois entre tous ces appels est sûr. La clé (chemin, mtime)
-# invalide automatiquement le cache dès qu'un plan est réimporté.
+# Parsing a DXF/DWG means building a Python object for every entity in the
+# drawing (potentially tens of thousands) even for a simple layer list — and
+# for a DWG, converting it first via the dwg2dxf subprocess.
+# get_dxf_layers/get_layer_geometry/get_layer_polygons/compute_mm_per_px are
+# all read-only on the returned Document (DXF export builds its own separate
+# ezdxf.new(), see export_plan_dxf), so sharing a single parsed Document across
+# all these calls is safe. The (path, mtime) key automatically invalidates the
+# cache as soon as a plan is reimported.
 @functools.lru_cache(maxsize=8)
 def _read_dxf_cached(filepath, mtime):
     return _read_dxf_uncached(filepath)
@@ -114,12 +114,11 @@ def _read_dxf(filepath):
 
 def _layers_with_geometry(doc):
     """
-    Noms des calques portant au moins une entité filiforme (LINE, LWPOLYLINE,
-    POLYLINE 2D) — exactement les types d'entités que get_layer_geometry()
-    affiche en aperçu. Sert à exclure de la liste les calques qui ne
-    contiennent que du texte/hachures/blocs/etc. et qui donneraient donc
-    systématiquement "Aucun élément trouvé sur ce calque." une fois
-    sélectionnés.
+    Names of layers carrying at least one wireframe entity (LINE, LWPOLYLINE,
+    POLYLINE 2D) — exactly the entity types that get_layer_geometry() shows
+    in the preview. Used to exclude from the list layers that contain only
+    text/hatches/blocks/etc., which would otherwise systematically show
+    "No elements found on this layer." once selected.
     """
     msp = doc.modelspace()
     layers = set()
@@ -132,8 +131,8 @@ def _layers_with_geometry(doc):
 
 
 def get_dxf_layers(filepath):
-    """Retourne la liste triée des noms de calques du fichier DXF contenant au
-    moins un élément affichable en aperçu (cf. _layers_with_geometry)."""
+    """Returns the sorted list of layer names in the DXF file that contain at
+    least one element that can be previewed (see _layers_with_geometry)."""
     doc = _read_dxf(filepath)
     usable = _layers_with_geometry(doc)
     return sorted(layer.dxf.name for layer in doc.layers if layer.dxf.name in usable)
@@ -141,10 +140,10 @@ def get_dxf_layers(filepath):
 
 def _is_effectively_closed(points):
     """
-    Beaucoup de DXF réels contiennent des polylignes visuellement fermées
-    (premier et dernier point quasi identiques) sans que le flag DXF "closed"
-    soit positionné. On les détecte via une tolérance relative à la taille
-    du polygone plutôt que de se fier uniquement au flag.
+    Many real-world DXF files contain visually closed polylines (first and
+    last point nearly identical) without the DXF "closed" flag being set.
+    They are detected via a tolerance relative to the polygon's size rather
+    than relying solely on the flag.
     """
     if len(points) < 3:
         return False
@@ -158,12 +157,12 @@ def _is_effectively_closed(points):
 
 def get_layer_polygons(filepath, layer_name):
     """
-    Extrait les polygones fermés (LWPOLYLINE et POLYLINE 2D) du calque donné.
-    Une polyligne est considérée fermée si son flag DXF "closed" est positionné,
-    OU si son premier et dernier point coïncident (à la tolérance près) : voir
+    Extracts the closed polygons (LWPOLYLINE and 2D POLYLINE) from the given
+    layer. A polyline is considered closed if its DXF "closed" flag is set,
+    OR if its first and last point coincide (within tolerance): see
     _is_effectively_closed().
-    Retourne une liste de listes de points [[x, y], ...] en unités DXF
-    (non normalisées).
+    Returns a list of lists of points [[x, y], ...] in DXF units
+    (not normalized).
     """
     doc = _read_dxf(filepath)
     msp = doc.modelspace()
@@ -190,11 +189,11 @@ def get_layer_polygons(filepath, layer_name):
 
 def polygon_fingerprint(polygon):
     """
-    Aire (formule du lacet) + centroïde + nombre de sommets d'un polygone, en
-    unités DXF natives (avant toute normalisation pixel). Utilisé pour
-    détecter si une zone existante correspond à un nouveau polygone lors d'un
-    réimport DXF (cf. match_zones_to_polygons) — pas pour un rendu
-    géométrique précis, une empreinte approximative suffit.
+    Area (shoelace formula) + centroid + vertex count of a polygon, in native
+    DXF units (before any pixel normalization). Used to detect whether an
+    existing zone corresponds to a new polygon during a DXF reimport (see
+    match_zones_to_polygons) — not for precise geometric rendering, an
+    approximate fingerprint is enough.
     """
     xs = [p[0] for p in polygon]
     ys = [p[1] for p in polygon]
@@ -221,16 +220,15 @@ def polygon_fingerprint(polygon):
 
 def fingerprints_match(fp1, fp2, area_tolerance_ratio=0.01):
     """
-    Signature volontairement basée UNIQUEMENT sur l'aire et le nombre de
-    sommets — toutes deux invariantes à n'importe quelle transformation
-    rigide du calque entier (translation ET rotation). Si tout le dessin
-    bouge de quelques cm, voire pivote, entre deux exports, aucune pièce
-    inchangée n'a sa position comparée en absolu, donc rien ne casse. Un
-    local scindé en deux a chacune de ses moitiés à ~50% de l'aire d'origine
-    : rejeté largement par la tolérance d'aire, donc aucune correspondance —
-    exactement le comportement voulu. Un local réellement agrandi/rétréci
-    (déplacement d'un mur) change aussi son aire au-delà de la tolérance :
-    correctement traité comme "modifié".
+    Signature deliberately based ONLY on area and vertex count — both
+    invariant to any rigid transformation of the whole layer (translation
+    AND rotation). If the entire drawing shifts by a few cm, or even
+    rotates, between two exports, no unchanged room has its position
+    compared in absolute terms, so nothing breaks. A room split into two has
+    each half at ~50% of the original area: rejected well outside the area
+    tolerance, so no match — exactly the intended behavior. A room that is
+    genuinely enlarged/shrunk (a wall moved) also changes its area beyond
+    the tolerance: correctly treated as "modified".
     """
     if fp1["vertex_count"] != fp2["vertex_count"]:
         return False
@@ -240,24 +238,24 @@ def fingerprints_match(fp1, fp2, area_tolerance_ratio=0.01):
 
 def match_zones_to_polygons(existing_zones, new_polygons):
     """
-    Apparie chaque zone existante (objet portant un attribut `source_polygon`
-    — typiquement une instance PlanZone, ou None pour les zones créées avant
-    ce champ, alors ignorées) aux nouveaux polygones (`new_polygons`, en
-    unités DXF natives, avant normalisation) dont la signature aire+sommets
-    correspond (fingerprints_match). Quand une seule pièce du bâtiment a
-    cette aire, la position ne sert à rien — la translation/rotation globale
-    du calque n'a donc aucune influence sur le résultat. Ce n'est que
-    lorsque PLUSIEURS nouveaux polygones partagent une aire/nb de sommets
-    proches de la même zone existante (ex: deux pièces de taille identique)
-    que la proximité de centroïde sert de DÉPARTAGE entre ces candidats déjà
-    validés par l'aire — jamais de critère de rejet en absolu. Appariement
-    glouton (meilleur score d'abord), unique dans les deux sens.
+    Matches each existing zone (object carrying a `source_polygon` attribute
+    — typically a PlanZone instance, or None for zones created before this
+    field existed, then ignored) to the new polygons (`new_polygons`, in
+    native DXF units, before normalization) whose area+vertex signature
+    matches (fingerprints_match). When only one room in the building has
+    that area, position is irrelevant — the layer's global
+    translation/rotation therefore has no influence on the result. Only
+    when SEVERAL new polygons share a similar area/vertex count with the
+    same existing zone (e.g. two rooms of identical size) does centroid
+    proximity serve as a TIE-BREAKER between these candidates already
+    validated by area — never used as an absolute rejection criterion.
+    Greedy matching (best score first), unique in both directions.
 
-    Retourne (matches, unmatched_zones, unmatched_indices) où `matches` est
-    une liste de tuples (zone, index dans new_polygons), `unmatched_zones`
-    les zones sans correspondance (tracé disparu ou structurellement
-    changé), `unmatched_indices` les index de new_polygons sans zone
-    correspondante (pièce nouvelle, ou moitié d'une pièce scindée).
+    Returns (matches, unmatched_zones, unmatched_indices) where `matches` is
+    a list of tuples (zone, index in new_polygons), `unmatched_zones` the
+    zones with no match (trace disappeared or structurally changed),
+    `unmatched_indices` the indices of new_polygons with no matching zone
+    (new room, or half of a split room).
     """
     new_fingerprints = [polygon_fingerprint(p) for p in new_polygons]
     candidates = []
@@ -275,8 +273,8 @@ def match_zones_to_polygons(existing_zones, new_polygons):
             )
             candidates.append((zone, index, area_diff, centroid_dist))
 
-    # Aire la plus proche d'abord ; le centroïde ne départage qu'entre candidats déjà
-    # validés par l'aire (cf. docstring) — jamais utilisé seul pour rejeter un match.
+    # Closest area first; the centroid only breaks ties between candidates already
+    # validated by area (see docstring) — never used alone to reject a match.
     candidates.sort(key=lambda c: (c[2], c[3]))
 
     matched_zone_ids = set()
@@ -298,12 +296,12 @@ def match_zones_to_polygons(existing_zones, new_polygons):
 
 def get_layer_geometry(filepath, layer_name):
     """
-    Extrait toute la géométrie filiforme (LINE, LWPOLYLINE, POLYLINE 2D, ouvertes
-    ou fermées) d'un calque, à des fins de prévisualisation visuelle uniquement —
-    contrairement à get_layer_polygons(), qui ne retient que les polygones fermés
-    utilisés pour générer les zones. Permet de voir un calque de murs/annotations
-    même s'il ne contient aucune délimitation fermée.
-    Retourne une liste de {'points': [[x, y], ...], 'closed': bool}.
+    Extracts all wireframe geometry (LINE, LWPOLYLINE, POLYLINE 2D, open or
+    closed) from a layer, for visual preview purposes only — unlike
+    get_layer_polygons(), which only keeps the closed polygons used to
+    generate zones. Allows viewing a walls/annotations layer even if it
+    contains no closed boundary.
+    Returns a list of {'points': [[x, y], ...], 'closed': bool}.
     """
     doc = _read_dxf(filepath)
     msp = doc.modelspace()
@@ -351,7 +349,7 @@ def get_layer_geometry(filepath, layer_name):
 
 
 def _compute_scale(polygons, width_px, height_px):
-    """Facteur d'échelle px par unité DXF, identique à celui utilisé par
+    """Scale factor in px per DXF unit, identical to the one used by
     normalize_polygons()."""
     all_x = [p[0] for poly in polygons for p in poly]
     all_y = [p[1] for poly in polygons for p in poly]
@@ -362,11 +360,12 @@ def _compute_scale(polygons, width_px, height_px):
 
 def compute_mm_per_px(filepath, polygons, width_px, height_px):
     """
-    Combine le facteur d'échelle px/unité-DXF (_compute_scale) avec l'unité réelle du
-    fichier DXF (en-tête $INSUNITS, lu via ezdxf.units) pour obtenir mm par pixel —
-    utilisé pour convertir les dimensions réelles (cm/pouces) d'un device en pixels à
-    la bonne échelle visuelle par rapport à la pièce. Si le DXF ne déclare aucune unité
-    ("unitless"), on suppose le millimètre (hypothèse documentée, pas de blocage UI).
+    Combines the px/DXF-unit scale factor (_compute_scale) with the DXF file's
+    actual unit ($INSUNITS header, read via ezdxf.units) to obtain mm per
+    pixel — used to convert a device's real dimensions (cm/inches) into
+    pixels at the correct visual scale relative to the room. If the DXF
+    declares no unit ("unitless"), millimeters are assumed (a documented
+    assumption, not a UI blocker).
     """
     if not polygons:
         return None
@@ -381,9 +380,10 @@ def compute_mm_per_px(filepath, polygons, width_px, height_px):
 
 def compute_transform(polygons, width_px, height_px):
     """
-    Paramètres de la transformation DXF (espace modèle) -> pixel canvas, identiques à
-    ceux utilisés par normalize_polygons(). Centralisé ici pour que pixel_to_dxf()
-    (transformation inverse, utilisée par l'export DXF) reste forcément cohérent.
+    Parameters of the DXF (model space) -> canvas pixel transformation,
+    identical to those used by normalize_polygons(). Centralized here so
+    that pixel_to_dxf() (inverse transformation, used by the DXF export)
+    necessarily stays consistent.
     """
     all_x = [p[0] for poly in polygons for p in poly]
     all_y = [p[1] for poly in polygons for p in poly]
@@ -403,8 +403,8 @@ def compute_transform(polygons, width_px, height_px):
 
 def normalize_polygons(polygons, width_px, height_px):
     """
-    Normalise les coordonnées DXF (espace modèle) vers l'espace pixel du canvas.
-    DXF utilise un repère Y vers le haut ; le canvas HTML un repère Y vers le bas.
+    Normalizes DXF coordinates (model space) into the canvas pixel space.
+    DXF uses a Y-up coordinate system; the HTML canvas uses Y-down.
     """
     if not polygons:
         return []
@@ -424,21 +424,22 @@ def normalize_polygons(polygons, width_px, height_px):
 
 def backfill_source_polygons(plan):
     """
-    Renseigne source_polygon (espace DXF natif) pour les zones du plan qui
-    ne l'ont pas encore — typiquement des zones créées avant l'ajout de ce
-    champ. Sans cet appel, le premier réimport après l'ajout du champ
-    traiterait à tort TOUTES les zones existantes comme "non appariées"
-    (aucune référence DXF native à comparer), supprimant en cascade leurs
-    associations et objets posés alors même que rien n'a changé dans le
-    fichier.
+    Fills in source_polygon (native DXF space) for the plan's zones that
+    don't have it yet — typically zones created before this field was
+    added. Without this call, the first reimport after adding the field
+    would wrongly treat ALL existing zones as "unmatched" (no native DXF
+    reference to compare against), cascading the deletion of their
+    associations and placed objects even though nothing changed in the
+    file.
 
-    Doit être appelé en relisant le fichier/calque ENCORE attachés au plan, AVANT qu'un
-    réimport ne les remplace (cf. PlanReimportDxfView) : on rapproche chaque zone
-    existante (polygon_data, espace pixel) du polygone normalisé le plus proche issu de
-    CE MÊME fichier/calque — donc de la même transformation, contrairement à
-    match_zones_to_polygons() qui compare deux fichiers potentiellement différents. La
-    comparaison aire+sommets utilisée par match_zones_to_polygons() reste valable ici,
-    appliquée en espace pixel plutôt qu'en espace DXF natif.
+    Must be called by re-reading the file/layer STILL attached to the plan,
+    BEFORE a reimport replaces them (see PlanReimportDxfView): each existing
+    zone (polygon_data, pixel space) is matched to the closest normalized
+    polygon from THIS SAME file/layer — hence the same transformation,
+    unlike match_zones_to_polygons() which compares two potentially
+    different files. The area+vertex comparison used by
+    match_zones_to_polygons() remains valid here, applied in pixel space
+    rather than native DXF space.
     """
     if not plan.dxf_file or not plan.selected_layer:
         return
@@ -453,10 +454,10 @@ def backfill_source_polygons(plan):
         return
     normalized = normalize_polygons(polygons, plan.width_px, plan.height_px)
 
-    # Réutilise match_zones_to_polygons() en lui passant polygon_data
-    # (espace pixel) à la place de source_polygon : valide ici puisque
-    # `normalized` provient de la même transformation que polygon_data
-    # (même fichier, même calque, rien n'a encore changé).
+    # Reuses match_zones_to_polygons() by passing it polygon_data
+    # (pixel space) in place of source_polygon: valid here since
+    # `normalized` comes from the same transformation as polygon_data
+    # (same file, same layer, nothing has changed yet).
     class _PixelZone:
         def __init__(self, zone):
             self.pk = zone.pk
@@ -474,10 +475,11 @@ def backfill_source_polygons(plan):
 
 def pixel_to_dxf(px, py, transform, height_px):
     """
-    Transformation inverse de normalize_polygons() : reconvertit un point exprimé en
-    pixel canvas (espace global du plan) vers les coordonnées du fichier DXF
-    d'origine. Utilisé par l'export DXF pour replacer les objets posés sur le plan
-    (PlacedObject.x/y, en pixels) à leur position réelle dans le dessin CAO.
+    Inverse transformation of normalize_polygons(): converts a point expressed
+    in canvas pixels (the plan's global space) back to the original DXF
+    file's coordinates. Used by the DXF export to place the objects on the
+    plan (PlacedObject.x/y, in pixels) at their real position in the CAD
+    drawing.
     """
     x = (px - transform["offset_x"]) / transform["scale"] + transform["min_x"]
     y = (height_px - py - transform["offset_y"]) / transform["scale"] + transform[
@@ -488,8 +490,8 @@ def pixel_to_dxf(px, py, transform, height_px):
 
 def normalize_strokes(strokes, width_px, height_px):
     """
-    Comme normalize_polygons(), mais pour une liste de {'points': [...], 'closed': bool}
-    pouvant contenir des tracés ouverts (issu de get_layer_geometry()).
+    Like normalize_polygons(), but for a list of {'points': [...], 'closed': bool}
+    that may contain open traces (produced by get_layer_geometry()).
     """
     if not strokes:
         return []
@@ -503,8 +505,8 @@ def normalize_strokes(strokes, width_px, height_px):
 
 def extract_zone_svg(polygon_points, zone_number):
     """
-    Génère un SVG individuel pour une zone (polygone + numéro), avec un padding
-    autour du polygone. Retourne le contenu SVG en bytes (utf-8).
+    Generates an individual SVG for a zone (polygon + number), with padding
+    around the polygon. Returns the SVG content as bytes (utf-8).
     """
     xs = [p[0] for p in polygon_points]
     ys = [p[1] for p in polygon_points]
@@ -540,17 +542,16 @@ DEVICE_EXPORT_LAYER = "NETBOX_CADPLAN_DEVICES"
 
 def export_plan_dxf(filepath, selected_layer, width_px, height_px, placed_objects):
     """
-    Crée un nouveau document DXF R2010 (propre, sans encodage corrompu) contenant :
-    - un calque ZONES avec les polygones du plan redessinés depuis les
-      données parsées
-    - un calque DEVICE_EXPORT_LAYER avec les objets posés repositionnés en
-      coordonnées DXF
-    Cette approche évite les problèmes d'encodage/matériaux du DXF/DWG source (AC1032,
-    ANSI_1252 + surrogates + données Material XML) qui empêchaient l'ouverture dans
-    LibreOffice et d'autres viewers.
-    `placed_objects` : liste de dicts {'x', 'y', 'rotation', 'shape', 'width_px',
-    'depth_px', 'diameter_px', 'name'} (tailles en pixels canvas).
-    Retourne le ezdxf.Document (à écrire via doc.write()).
+    Creates a new, clean DXF R2010 document (no corrupted encoding) containing:
+    - a ZONES layer with the plan's polygons redrawn from the parsed data
+    - a DEVICE_EXPORT_LAYER layer with the placed objects repositioned in
+      DXF coordinates
+    This approach avoids the encoding/material issues of the source DXF/DWG
+    (AC1032, ANSI_1252 + surrogates + Material XML data) that prevented it
+    from opening in LibreOffice and other viewers.
+    `placed_objects`: list of dicts {'x', 'y', 'rotation', 'shape', 'width_px',
+    'depth_px', 'diameter_px', 'name'} (sizes in canvas pixels).
+    Returns the ezdxf.Document (to be written via doc.write()).
     """
     polygons = get_layer_polygons(filepath, selected_layer)
     transform = compute_transform(polygons, width_px, height_px)

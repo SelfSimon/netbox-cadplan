@@ -32,11 +32,11 @@ class Plan(NetBoxModel):
     )
     width_px = models.PositiveIntegerField(default=1200)
     height_px = models.PositiveIntegerField(default=800)
-    # Échelle réelle du plan (millimètres représentés par un pixel canvas), calculée à
-    # partir de l'unité DXF détectée ($INSUNITS) lors de la génération des zones.
-    # Permet de convertir les dimensions réelles (cm/pouces) d'un DeviceTypeShape/Rack
-    # en pixels à la bonne échelle visuelle. Null si aucun calque n'a encore
-    # été confirmé.
+    # Real-world scale of the plan (millimeters represented by one canvas pixel),
+    # computed from the detected DXF unit ($INSUNITS) when zones are generated.
+    # Allows converting the real dimensions (cm/inches) of a DeviceTypeShape/Rack
+    # into pixels at the correct visual scale. Null if no layer has been confirmed
+    # yet.
     mm_per_px = models.FloatField(null=True, blank=True)
 
     class Meta:
@@ -66,8 +66,8 @@ class Plan(NetBoxModel):
                         )
                     }
                 )
-            # Mutuelle exclusivité : pas de plan de local si un plan de site
-            # entier existe déjà.
+            # Mutual exclusivity: no location plan if a whole-site plan
+            # already exists.
             if (
                 Plan.objects.filter(site_id=self.site_id, location__isnull=True)
                 .exclude(pk=self.pk)
@@ -82,9 +82,9 @@ class Plan(NetBoxModel):
                     }
                 )
         else:
-            # UniqueConstraint(site, location) ne bloque pas deux lignes
-            # location=NULL pour le même site (NULL != NULL en SQL) : on
-            # l'impose donc explicitement ici.
+            # UniqueConstraint(site, location) doesn't block two rows with
+            # location=NULL for the same site (NULL != NULL in SQL), so we
+            # enforce it explicitly here.
             if (
                 Plan.objects.filter(site_id=self.site_id, location__isnull=True)
                 .exclude(pk=self.pk)
@@ -98,8 +98,8 @@ class Plan(NetBoxModel):
                         )
                     }
                 )
-            # Mutuelle exclusivité : pas de plan de site entier si des plans
-            # de local existent déjà.
+            # Mutual exclusivity: no whole-site plan if location plans
+            # already exist.
             if (
                 Plan.objects.filter(site_id=self.site_id, location__isnull=False)
                 .exclude(pk=self.pk)
@@ -122,7 +122,7 @@ class PlanZone(NetBoxModel):
         related_name="zones",
     )
     number = models.PositiveIntegerField()
-    # OneToOne : un local (Location) ne peut correspondre qu'à une seule zone du plan.
+    # OneToOne: a location can only correspond to a single zone of the plan.
     location = models.OneToOneField(
         to="dcim.Location",
         on_delete=models.SET_NULL,
@@ -131,12 +131,12 @@ class PlanZone(NetBoxModel):
         related_name="plan_zone",
     )
     polygon_data = models.JSONField()
-    # Polygone brut en unités DXF natives (avant normalize_polygons), distinct de
-    # polygon_data (espace pixel, utilisé pour le rendu). Sert de référence stable pour
-    # détecter si cette zone a réellement changé lors d'un réimport du DXF — comparer
-    # polygon_data directement serait piégé par un simple décalage/rescale global de
-    # toutes les zones du calque (cf. compute_transform()), sans rapport avec un vrai
-    # changement de cette pièce. Null pour les zones créées avant ce champ.
+    # Raw polygon in native DXF units (before normalize_polygons), distinct from
+    # polygon_data (pixel space, used for rendering). Serves as a stable reference to
+    # detect whether this zone actually changed during a DXF reimport — comparing
+    # polygon_data directly would be tripped up by a mere global shift/rescale of
+    # all the layer's zones (see compute_transform()), unrelated to an actual
+    # change to this room. Null for zones created before this field existed.
     source_polygon = models.JSONField(null=True, blank=True)
     svg_file = models.FileField(upload_to="plans/svg/", null=True, blank=True)
     label = models.CharField(max_length=100, blank=True)
@@ -160,9 +160,9 @@ class PlanZone(NetBoxModel):
 
 class DeviceTypeShape(NetBoxModel):
     """
-    Représentation graphique (forme + dimensions réelles) d'un DeviceType sur un plan.
-    Un Rack n'a pas besoin de ce modèle : ses dimensions viennent directement
-    de dcim.Rack (outer_width/outer_depth/outer_unit).
+    Graphical representation (shape + real dimensions) of a DeviceType on a plan.
+    A Rack does not need this model: its dimensions come directly from
+    dcim.Rack (outer_width/outer_depth/outer_unit).
     """
 
     device_type = models.OneToOneField(
@@ -212,11 +212,11 @@ class DeviceTypeShape(NetBoxModel):
 
 class PlacedObject(NetBoxModel):
     """
-    Positionnement d'un Device ou d'un Rack NetBox sur un plan. `x`/`y` sont
-    exprimés dans le même espace pixel global que PlanZone.polygon_data (voir
-    normalize_polygons()) : la vue du plan les affiche tels quels, la vue d'un local
-    applique le même décalage que extract_zone_svg() pour les recentrer sur la zone.
-    Une seule ligne en base pour les deux vues : la synchronisation est automatique.
+    Placement of a NetBox Device or Rack on a plan. `x`/`y` are expressed in the
+    same global pixel space as PlanZone.polygon_data (see normalize_polygons()):
+    the plan view displays them as-is, the location view applies the same offset
+    as extract_zone_svg() to recenter them on the zone. A single database row
+    serves both views, so they stay in sync automatically.
     """
 
     zone = models.ForeignKey(
@@ -233,13 +233,13 @@ class PlacedObject(NetBoxModel):
     content_object = GenericForeignKey("object_type", "object_id")
     x = models.FloatField()
     y = models.FloatField()
-    # Degrés ; pertinent pour les rectangles uniquement (ignoré pour les cercles).
+    # Degrees; relevant for rectangles only (ignored for circles).
     rotation = models.FloatField(default=0)
     snap_to_wall = models.BooleanField(default=False)
-    # Quand True : l'objet est posé à l'extérieur du polygone de la zone, collé en
-    # permanence contre le mur le plus proche (glisse le long du périmètre lors du
-    # déplacement, ne peut pas s'en détacher) — mutuellement exclusif avec
-    # snap_to_wall, qui ne concerne que l'aimantation optionnelle à l'intérieur.
+    # When True: the object is placed outside the zone's polygon, permanently
+    # stuck against the nearest wall (slides along the perimeter when moved,
+    # cannot detach from it) — mutually exclusive with snap_to_wall, which only
+    # concerns optional magnetic snapping on the inside.
     outside_wall = models.BooleanField(default=False)
     name_position = models.CharField(
         max_length=10,

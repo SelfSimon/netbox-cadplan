@@ -11,8 +11,8 @@
 {% block head %}
   {{ block.super }}
   <style>
-    /* Le gris "disabled" par défaut de Bootstrap est trop discret pour bien distinguer
-       visuellement les champs non pertinents pour la forme sélectionnée (rectangle/cercle). */
+    /* Bootstrap's default "disabled" gray is too subtle to clearly distinguish
+       the fields that are irrelevant for the selected shape (rectangle/circle). */
     #id_width:disabled, #id_depth:disabled, #id_diameter:disabled {
       background-color: #e1e9f0 !important;
       opacity: 0.8;

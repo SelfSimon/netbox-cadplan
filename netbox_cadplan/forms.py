@@ -56,9 +56,9 @@ class PlanForm(NetBoxModelForm):
 
 class ReimportDxfForm(NetBoxModelForm):
     """
-    Remplace uniquement le fichier DXF d'un plan déjà confirmé (pas name/site/location,
-    contrairement à PlanForm) — vide selected_layer à l'enregistrement pour faire
-    réapparaître le panneau de sélection de calque (cf. PlanReimportDxfView).
+    Replaces only the DXF file of an already-confirmed plan (not name/site/location,
+    unlike PlanForm) — clears selected_layer on save to make the layer selection
+    panel reappear (see PlanReimportDxfView).
     """
 
     fieldsets = (FieldSet("dxf_file", name=_("Reimport a DXF")),)

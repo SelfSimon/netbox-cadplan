@@ -2,14 +2,14 @@ from django.urls import include, path
 from django.views.i18n import JavaScriptCatalog
 from utilities.urls import get_model_urls
 
-from . import views  # noqa: F401  (déclenche les décorateurs register_model_view)
+from . import views  # noqa: F401  (triggers the register_model_view decorators)
 
 app_name = "netbox_cadplan"
 
 urlpatterns = (
-    # Expose gettext()/ngettext()/interpolate() côté JS (catalogue de traduction du
-    # domaine 'djangojs' de ce plugin uniquement) pour plan_editor.js — inclus comme
-    # <script> avant ce dernier dans les templates qui l'utilisent.
+    # Exposes gettext()/ngettext()/interpolate() on the JS side (translation
+    # catalog for this plugin's 'djangojs' domain only) for plan_editor.js —
+    # included as a <script> before it in the templates that use it.
     path(
         "jsi18n/",
         JavaScriptCatalog.as_view(packages=["netbox_cadplan"]),

@@ -169,9 +169,9 @@
 {% endif %}
 
 {% comment %}
-?v=N en cache-buster manuel : les fichiers statiques sont servis avec cache-control: max-age=86400
-et sans ETag/Last-Modified, donc le navigateur ne re-télécharge jamais l'ancienne version sans ça.
-Incrémenter N à chaque modification de plan_editor.js / plan.css.
+?v=N as a manual cache-buster: static files are served with cache-control: max-age=86400
+and without ETag/Last-Modified, so the browser never re-downloads the old version without this.
+Increment N on every change to plan_editor.js / plan.css.
 {% endcomment %}
 <link rel="stylesheet" href="{% static 'netbox_cadplan/css/plan.css' %}?v=75">
 <script src="https://unpkg.com/konva@9/konva.min.js"></script>

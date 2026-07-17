@@ -49,10 +49,10 @@ def _to_mm(value, unit):
 
 def _resolve_shape_mm(obj):
     """
-    Retourne {'shape': 'rectangle'|'circle', 'width_mm', 'depth_mm',
-    'diameter_mm'} pour un Device ou un Rack, ou None si l'objet n'a pas de
-    représentation configurée (Device dont le DeviceType n'a pas de
-    DeviceTypeShape, ou Rack sans outer_width/depth).
+    Returns {'shape': 'rectangle'|'circle', 'width_mm', 'depth_mm',
+    'diameter_mm'} for a Device or a Rack, or None if the object has no
+    configured representation (a Device whose DeviceType has no
+    DeviceTypeShape, or a Rack without outer_width/depth).
     """
     if isinstance(obj, Rack):
         if obj.outer_width is None or obj.outer_depth is None or not obj.outer_unit:
@@ -92,9 +92,9 @@ def _serialize_pickable(obj):
         "name": str(obj),
         "url": obj.get_absolute_url(),
         "placeable": shape is not None,
-        # Devices sans DeviceTypeShape : lien direct vers la vue de configuration
-        # (cf. DeviceTypePlanShapeEditView) pour éviter à l'utilisateur de devoir
-        # retrouver le type d'appareil lui-même.
+        # Devices without a DeviceTypeShape: direct link to the configuration
+        # view (see DeviceTypePlanShapeEditView) so the user doesn't have to
+        # go find the device type themselves.
         "configure_url": (
             reverse(
                 "dcim:devicetype_plan_shape_edit",
@@ -220,24 +220,24 @@ class PlanDeleteView(generic.ObjectDeleteView):
 @register_model_view(Plan, name="reimport_dxf", path="reimport-dxf")
 class PlanReimportDxfView(generic.ObjectEditView):
     """
-    Remplace le fichier DXF d'un plan déjà confirmé. ReimportDxfForm vide
-    selected_layer à l'enregistrement, ce qui fait réapparaître le panneau
-    de sélection de calque (plan.html : `{% if object.dxf_file and not
-    object.selected_layer %}`) sans toucher aux zones existantes (`{% if
-    zones %}` est indépendant de selected_layer) — c'est la confirmation du
-    nouveau calque (plan_confirm_layer) qui réconcilie ensuite les zones.
+    Replaces the DXF file of an already-confirmed plan. ReimportDxfForm
+    clears selected_layer on save, which makes the layer selection panel
+    reappear (plan.html: `{% if object.dxf_file and not
+    object.selected_layer %}`) without touching the existing zones (`{% if
+    zones %}` is independent of selected_layer) — it's the confirmation of
+    the new layer (plan_confirm_layer) that then reconciles the zones.
     """
 
     queryset = Plan.objects.all()
     form = forms.ReimportDxfForm
 
     def post(self, request, *args, **kwargs):
-        # Avant que le formulaire ne remplace dxf_file/selected_layer, comble
-        # rétroactivement source_polygon sur les zones existantes qui ne
-        # l'ont pas encore (créées avant l'ajout de ce champ) en relisant
-        # le fichier/calque ENCORE attachés au plan à cet instant — sans
-        # cette étape, le tout premier réimport traiterait à tort toutes
-        # les zones existantes comme "disparues".
+        # Before the form replaces dxf_file/selected_layer, retroactively
+        # fill in source_polygon on the existing zones that don't have it
+        # yet (created before this field was added) by re-reading the
+        # file/layer STILL attached to the plan at this point — without
+        # this step, the very first reimport would wrongly treat all
+        # existing zones as "disappeared".
         plan = get_object_or_404(Plan, pk=kwargs["pk"])
         backfill_source_polygons(plan)
         return super().post(request, *args, **kwargs)
@@ -251,11 +251,11 @@ def _location_has_zone(instance):
 @register_model_view(Location, name="zone", path="zone")
 class LocationZoneView(generic.ObjectView):
     """
-    Onglet "Zone" sur la page de la Location associée à une zone d'un Plan
-    (PlanZone.location) : n'affiche que la zone du local courant,
-    contrairement à LocationPlanView (onglet "Plan", qui affiche le plan
-    complet quand cette Location est elle-même la racine d'un Plan de
-    local). Une même Location peut porter les deux onglets simultanément.
+    "Zone" tab on the page of the Location associated with a zone of a Plan
+    (PlanZone.location): only displays the current location's zone, unlike
+    LocationPlanView (the "Plan" tab, which displays the full plan when this
+    Location is itself the root of a location plan). The same Location can
+    carry both tabs simultaneously.
     """
 
     queryset = Location.objects.all()
@@ -272,17 +272,17 @@ class LocationZoneView(generic.ObjectView):
         if not zone:
             return {"zone": None, "svg_url": None}
 
-        # Même décalage que extract_zone_svg() : recentre le polygone de la zone (espace
-        # global du plan) sur une origine locale, avec un padding de 10px.
+        # Same offset as extract_zone_svg(): recenters the zone's polygon
+        # (the plan's global space) onto a local origin, with a 10px padding.
         min_x, min_y, max_x, max_y = _polygon_bbox(zone.polygon_data)
         pad = 10
         offset_x, offset_y = min_x - pad, min_y - pad
 
-        # Polygones des zones enfants directs : utilisés pour percer des trous visuels
-        # dans le rendu Konva (fillRule:'evenodd'), afin que la zone externe n'affiche
-        # sa couleur de remplissage que dans son aire exclusive (hors sous-zones).
-        # "Enfant direct" = zone dont le centroïde est dans cette zone ET qui n'est
-        # contenu par aucune autre zone elle-même contenue dans cette zone.
+        # Polygons of the direct child zones: used to punch visual holes in
+        # the Konva rendering (fillRule:'evenodd'), so the outer zone only
+        # shows its fill color in its exclusive area (excluding sub-zones).
+        # "Direct child" = a zone whose centroid is inside this zone AND that
+        # is not contained by any other zone itself contained in this zone.
         plan_zones = list(zone.plan.zones.exclude(pk=zone.pk))
         inner = [
             z
@@ -326,10 +326,10 @@ def _location_has_root_plan(instance):
 @register_model_view(Site, name="plan", path="plan")
 class SitePlanView(generic.ObjectView):
     """
-    Onglet "Plan" sur la page du Site, visible quand ce Site a un plan couvrant tout le
-    site (Plan.location = None). Affiche le plan complet (toutes les zones), avec le
-    même gabarit que LocationPlanView (plan de local) — seule la requête qui résout
-    `plan` change.
+    "Plan" tab on the Site page, visible when this Site has a plan covering
+    the whole site (Plan.location = None). Displays the full plan (all
+    zones), with the same template as LocationPlanView (location plan) —
+    only the query that resolves `plan` changes.
     """
 
     queryset = Site.objects.all()
@@ -349,10 +349,9 @@ class SitePlanView(generic.ObjectView):
 @register_model_view(Location, name="plan", path="plan")
 class LocationPlanView(generic.ObjectView):
     """
-    Onglet "Plan" sur la page de la Location, visible quand cette Location
-    est elle-même la racine d'un Plan de local (Plan.location = cette
-    Location). Affiche le plan complet (toutes les zones) — partage le
-    même gabarit que SitePlanView.
+    "Plan" tab on the Location page, visible when this Location is itself
+    the root of a location plan (Plan.location = this Location). Displays
+    the full plan (all zones) — shares the same template as SitePlanView.
     """
 
     queryset = Location.objects.all()
@@ -372,9 +371,10 @@ class LocationPlanView(generic.ObjectView):
 @register_model_view(DeviceType, name="plan_shape_edit", path="plan-shape/edit")
 class DeviceTypePlanShapeEditView(generic.ObjectEditView):
     """
-    Édite (ou crée) l'unique DeviceTypeShape d'un DeviceType. Le `pk` de l'URL
-    appartient au DeviceType (vue attachée via register_model_view), pas au
-    DeviceTypeShape — get_object() doit donc résoudre par device_type_id, pas par pk.
+    Edits (or creates) the single DeviceTypeShape of a DeviceType. The URL's
+    `pk` belongs to the DeviceType (view attached via register_model_view),
+    not to the DeviceTypeShape — get_object() must therefore resolve by
+    device_type_id, not by pk.
     """
 
     queryset = DeviceTypeShape.objects.all()
@@ -390,10 +390,10 @@ class DeviceTypePlanShapeEditView(generic.ObjectEditView):
 
 def _candidate_locations(plan, user):
     """
-    Locations exploitables pour l'association de zones de ce plan : descendants (à
-    n'importe quelle profondeur) de la Location du plan si elle est définie, sinon
-    toutes les Locations du site du plan (chaque Location porte un FK site direct,
-    indépendamment de sa position dans l'arborescence).
+    Locations usable for associating zones of this plan: descendants (at any
+    depth) of the plan's Location if it is set, otherwise all the Locations
+    of the plan's site (each Location carries a direct site FK, regardless
+    of its position in the tree).
     """
     if plan.location:
         return plan.location.get_descendants().restrict(user, "view")
@@ -429,12 +429,12 @@ def plan_layers(request, pk):
 def plan_layer_preview(request, pk):
     """
     GET /plugins/cadplan/plans/<pk>/layer-preview/?layer=<name>
-    Aperçu en lecture seule de toute la géométrie filiforme d'un calque
-    (murs, annotations, délimitations ouvertes ou fermées — normalisée en
-    pixels canvas), sans rien persister. Volontairement plus permissif que
-    get_layer_polygons() (utilisé par confirm-layer) : on veut voir le calque
-    même s'il ne contient aucune délimitation fermée, pour pouvoir comparer
-    plusieurs calques avant de choisir le bon.
+    Read-only preview of all the wireframe geometry of a layer (walls,
+    annotations, open or closed boundaries — normalized to canvas pixels),
+    without persisting anything. Deliberately more permissive than
+    get_layer_polygons() (used by confirm-layer): we want to see the layer
+    even if it contains no closed boundary, so several layers can be
+    compared before picking the right one.
     """
     plan = get_object_or_404(Plan, pk=pk)
     if not request.user.has_perm("netbox_cadplan.view_plan"):
@@ -457,8 +457,8 @@ def plan_layer_preview(request, pk):
 
 
 def _location_display(location, root):
-    """Chemin hiérarchique de `location` relatif à `root`
-    (ex: 'Local 114 / Local 114.1')."""
+    """Hierarchical path of `location` relative to `root`
+    (e.g. 'Room 114 / Room 114.1')."""
     chain = []
     node = location
     while node and node.pk != root.pk:
@@ -472,11 +472,11 @@ def _location_display(location, root):
 def plan_locations(request, pk):
     """
     GET /plugins/cadplan/plans/<pk>/locations/
-    Si le plan a une Location racine : tous ses descendants (à n'importe quelle
-    profondeur), pour peupler le menu d'association. Sinon (plan couvrant tout un
-    site) : toutes les Locations de ce site. L'API NetBox /api/dcim/locations/ ne
-    filtre que par parent direct (parent_id) ; les Locations imbriquées (ex: Local 114
-    -> Local 114.1) nécessitent une vraie requête d'arborescence MPTT.
+    If the plan has a root Location: all its descendants (at any depth), to
+    populate the association menu. Otherwise (a plan covering a whole site):
+    all the Locations of that site. The NetBox API /api/dcim/locations/ only
+    filters by direct parent (parent_id); nested Locations (e.g. Room 114 ->
+    Room 114.1) require a real MPTT tree query.
     """
     plan = get_object_or_404(Plan, pk=pk)
     if not request.user.has_perm("netbox_cadplan.view_plan"):
@@ -496,11 +496,11 @@ def plan_locations(request, pk):
 
 def _layer_name_and_polygons_from_request(plan, request):
     """
-    Factorise la validation commune à
-    plan_confirm_layer()/plan_confirm_layer_preview() : fichier DXF
-    présent, corps JSON valide, layer_name fourni, calque lisible et non
-    vide. Retourne (layer_name, polygons, None) ou (None, None,
-    JsonResponse d'erreur).
+    Factors out the validation shared by
+    plan_confirm_layer()/plan_confirm_layer_preview(): DXF file present,
+    valid JSON body, layer_name provided, layer readable and non-empty.
+    Returns (layer_name, polygons, None) or (None, None, error
+    JsonResponse).
     """
     if not plan.dxf_file:
         return (
@@ -555,11 +555,11 @@ def plan_confirm_layer_preview(request, pk):
     """
     POST /plugins/cadplan/plans/<pk>/confirm-layer-preview/
     body: {"layer_name": "..."}
-    Calcule (sans rien écrire en base) le résumé de ce que produirait
-    plan_confirm_layer() sur ce calque : nombre de zones inchangées /
-    supprimées / créées, et d'objets posés qui seraient retirés. Permet
-    d'afficher un récapitulatif avant application lors d'un réimport (cf.
-    plan_confirm_layer, même algorithme de réconciliation).
+    Computes (without writing anything to the database) the summary of what
+    plan_confirm_layer() would produce on this layer: number of unchanged /
+    removed / created zones, and placed objects that would be removed.
+    Allows displaying a summary before applying a reimport (see
+    plan_confirm_layer, same reconciliation algorithm).
     """
     plan = get_object_or_404(Plan, pk=pk)
     if not request.user.has_perm("netbox_cadplan.change_plan"):
@@ -594,17 +594,16 @@ def plan_confirm_layer_preview(request, pk):
 def plan_confirm_layer(request, pk):
     """
     POST /plugins/cadplan/plans/<pk>/confirm-layer/  body: {"layer_name": "..."}
-    Fixe le calque sélectionné et réconcilie les PlanZone avec les
-    polygones fermés de ce calque (normalisés en pixels canvas) : une zone
-    existante dont le tracé DXF natif (source_polygon) correspond toujours
-    à un nouveau polygone (cf. match_zones_to_polygons) est conservée
-    telle quelle (numéro, association, objets posés, tags) ; une zone sans
-    correspondance (tracé disparu ou structurellement changé, ex: local
-    scindé) est supprimée (cascade : ses objets posés aussi) ; un nouveau
-    polygone sans zone correspondante devient une zone fraîche, non
-    associée. Fonctionne aussi bien pour le tout premier import (aucune
-    zone existante => tout est "nouveau", comportement historique) que
-    pour un réimport.
+    Sets the selected layer and reconciles the PlanZones with this layer's
+    closed polygons (normalized to canvas pixels): an existing zone whose
+    native DXF trace (source_polygon) still matches a new polygon (see
+    match_zones_to_polygons) is kept as-is (number, association, placed
+    objects, tags); a zone with no match (trace disappeared or
+    structurally changed, e.g. a split room) is deleted (cascading: its
+    placed objects too); a new polygon with no matching zone becomes a
+    fresh, unassociated zone. Works both for the very first import (no
+    existing zone => everything is "new", the historical behavior) and
+    for a reimport.
     """
     plan = get_object_or_404(Plan, pk=pk)
     if not request.user.has_perm("netbox_cadplan.change_plan"):
@@ -648,11 +647,11 @@ def plan_confirm_layer(request, pk):
         )
         next_number += 1
 
-    # Renumérotation compacte : supprime les trous et la dérive vers le
-    # haut qui apparaît quand toutes les zones sont non appariées (zones
-    # sans source_polygon, premier réimport après la migration). Ordre
-    # croissant = jamais de conflit UniqueConstraint car les trous sont
-    # dans les valeurs basses (libérées par les zones supprimées).
+    # Compact renumbering: removes gaps and the upward drift that appears
+    # when all zones are unmatched (zones without source_polygon, first
+    # reimport after the migration). Ascending order = never a
+    # UniqueConstraint conflict since the gaps are in the low values
+    # (freed up by the deleted zones).
     zones = []
     for new_number, zone in enumerate(plan.zones.order_by("number"), start=1):
         if zone.number != new_number:
@@ -681,7 +680,7 @@ def plan_save_associations(request, pk):
     """
     POST /plugins/cadplan/plans/<pk>/save-associations/
     body: {"associations": [{"zone_number": 1, "location_id": 5}, ...]}
-    Un location_id null/absent désassocie la zone.
+    A null/absent location_id disassociates the zone.
     """
     plan = get_object_or_404(Plan, pk=pk)
     if not request.user.has_perm("netbox_cadplan.change_planzone"):
@@ -714,13 +713,12 @@ def plan_save_associations(request, pk):
         if location_id in (None, ""):
             zone.location = None
             zone.svg_file.delete(save=False)
-            # Une fois la zone déliée, les devices/racks qui y étaient
-            # posés n'ont plus de local valide où rester ancrés (leur
-            # Location NetBox propre reste inchangée, mais la zone
-            # elle-même ne représente plus aucun local) : on les retire
-            # du plan pour qu'ils redeviennent plaçables ailleurs, plutôt
-            # que de les laisser flotter dans une zone redevenue un
-            # simple numéro.
+            # Once the zone is unlinked, the devices/racks that were placed
+            # in it no longer have a valid location to stay anchored to
+            # (their own NetBox Location is unchanged, but the zone itself
+            # no longer represents any location): they are removed from the
+            # plan so they become placeable elsewhere, rather than leaving
+            # them floating in a zone that has reverted to a plain number.
             zone.placed_objects.all().delete()
         else:
             try:
@@ -761,8 +759,8 @@ def plan_save_associations(request, pk):
 
 
 def _pickable_objects_for_locations(locations):
-    """Racks + Devices non rackés des `locations` données, non encore
-    placés sur un plan."""
+    """Racks + non-racked Devices of the given `locations`, not yet
+    placed on a plan."""
     placed_keys = set(
         PlacedObject.objects.values_list(
             "object_type__app_label", "object_type__model", "object_id"
@@ -790,7 +788,8 @@ def _pickable_objects_for_locations(locations):
 def zone_pickable_objects(request, zone_pk):
     """
     GET /plugins/cadplan/zones/<zone_pk>/pickable-objects/
-    Racks/Devices non rackés du local associé à cette zone, non encore placés.
+    Non-racked Racks/Devices of the location associated with this zone, not
+    yet placed.
     """
     zone = get_object_or_404(PlanZone, pk=zone_pk)
     if not request.user.has_perm("netbox_cadplan.view_planzone"):
@@ -806,11 +805,12 @@ def zone_pickable_objects(request, zone_pk):
 def plan_pickable_objects(request, pk):
     """
     GET /plugins/cadplan/plans/<pk>/pickable-objects/
-    Racks/Devices non rackés de tous les locaux candidats du plan (descendants de sa
-    Location racine, ou tous les locaux du site si le plan n'a pas de Location), non
-    encore placés. Chaque entrée porte le numéro de la zone où elle doit être déposée
-    (dérivée de location.plan_zone) ; les locaux sans zone associée ne sont pas inclus
-    (aucun polygone où ancrer le placement).
+    Non-racked Racks/Devices of all the plan's candidate locations
+    (descendants of its root Location, or all locations of the site if the
+    plan has no Location), not yet placed. Each entry carries the number of
+    the zone where it should be dropped (derived from location.plan_zone);
+    locations without an associated zone are not included (no polygon to
+    anchor the placement to).
     """
     plan = get_object_or_404(Plan, pk=pk)
     if not request.user.has_perm("netbox_cadplan.view_plan"):
@@ -838,9 +838,10 @@ def plan_pickable_objects(request, pk):
 def plan_export_dxf(request, pk):
     """
     GET /plugins/cadplan/plans/<pk>/export-dxf/
-    Télécharge le DXF d'origine du plan, complété d'un nouveau calque
-    (utils.DEVICE_EXPORT_LAYER) contenant les Devices/Racks posés sur le plan, à leur
-    position réelle (transformation inverse de celle utilisée à l'import).
+    Downloads the plan's original DXF, augmented with a new layer
+    (utils.DEVICE_EXPORT_LAYER) containing the Devices/Racks placed on the
+    plan, at their real position (inverse of the transformation used on
+    import).
     """
     plan = get_object_or_404(Plan, pk=pk)
     if not request.user.has_perm("netbox_cadplan.view_plan"):
@@ -915,7 +916,7 @@ def place_object(request, zone_pk):
     """
     POST /plugins/cadplan/zones/<zone_pk>/place/
     body: {"object_type": "dcim.device", "object_id": 5}
-    Crée le PlacedObject au centre de la bounding box du polygone de la zone.
+    Creates the PlacedObject at the center of the zone polygon's bounding box.
     """
     zone = get_object_or_404(PlanZone, pk=zone_pk)
     if not request.user.has_perm("netbox_cadplan.add_placedobject"):
@@ -984,9 +985,9 @@ def update_placed_object(request, pk):
     POST /plugins/cadplan/placed-objects/<pk>/update/
     body: {"x": .., "y": .., "rotation": .., "snap_to_wall": ..,
     "outside_wall": .., "name_position": ..}
-    L'aimantation au mur (intérieure ou extérieure) est calculée côté JS ;
-    ce point ne fait que persister le résultat final (x/y/rotation déjà
-    ajustés par le client si besoin).
+    Wall snapping (inside or outside) is computed client-side in JS; this
+    endpoint only persists the final result (x/y/rotation already adjusted
+    by the client if needed).
     """
     placed = get_object_or_404(PlacedObject, pk=pk)
     if not request.user.has_perm("netbox_cadplan.change_placedobject"):
@@ -1010,8 +1011,8 @@ def update_placed_object(request, pk):
     if "outside_wall" in data:
         placed.outside_wall = bool(data["outside_wall"])
     if placed.outside_wall:
-        # Mutuellement exclusif : l'aimantation intérieure n'a pas de sens pour un objet
-        # collé en permanence à l'extérieur du polygone.
+        # Mutually exclusive: inside snapping makes no sense for an object
+        # permanently stuck outside the polygon.
         placed.snap_to_wall = False
     if "name_position" in data:
         name_position = data["name_position"]
@@ -1027,7 +1028,8 @@ def update_placed_object(request, pk):
 @login_required
 @require_POST
 def remove_placed_object(request, pk):
-    """POST /plugins/cadplan/placed-objects/<pk>/remove/ : retire l'objet du plan."""
+    """POST /plugins/cadplan/placed-objects/<pk>/remove/: removes the object from
+    the plan."""
     placed = get_object_or_404(PlacedObject, pk=pk)
     if not request.user.has_perm("netbox_cadplan.delete_placedobject"):
         return HttpResponseForbidden()
