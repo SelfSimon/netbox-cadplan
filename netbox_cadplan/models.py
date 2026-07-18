@@ -27,9 +27,7 @@ class Plan(NetBoxModel):
         related_name="plans",
     )
     dxf_file = models.FileField(_("DXF file"), upload_to="plans/dxf/")
-    selected_layer = models.CharField(
-        _("selected layer"), max_length=200, blank=True
-    )
+    selected_layer = models.CharField(_("selected layer"), max_length=200, blank=True)
     width_px = models.PositiveIntegerField(default=1200)
     height_px = models.PositiveIntegerField(default=800)
     # Real-world scale of the plan (millimeters represented by one canvas pixel),

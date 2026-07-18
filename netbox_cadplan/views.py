@@ -537,10 +537,7 @@ def _layer_name_and_polygons_from_request(plan, request):
             None,
             JsonResponse(
                 {
-                    "error": _(
-                        "No closed boundary found on layer "
-                        "“%(layer_name)s”."
-                    )
+                    "error": _("No closed boundary found on layer " "“%(layer_name)s”.")
                     % {"layer_name": layer_name}
                 },
                 status=400,
@@ -848,12 +845,7 @@ def plan_export_dxf(request, pk):
         return HttpResponseForbidden()
     if not plan.dxf_file or not plan.selected_layer:
         return JsonResponse(
-            {
-                "error": _(
-                    "This plan has no DXF file with a selected zones "
-                    "layer."
-                )
-            },
+            {"error": _("This plan has no DXF file with a selected zones " "layer.")},
             status=400,
         )
 
