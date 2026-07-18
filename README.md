@@ -11,6 +11,7 @@ in a dedicated tab on its NetBox page.
 
 | Package | NetBox        | Python |
 |---------|---------------|--------|
+| 0.2.x   | 4.6.0 – 4.6.99 | ≥ 3.10 |
 | 0.1.x   | 4.6.0 – 4.6.99 | ≥ 3.10 |
 
 ## Installation
@@ -20,7 +21,7 @@ in a dedicated tab on its NetBox page.
 ```bash
 pip install netbox-cadplan
 # or from source:
-pip install git+https://github.com/simonlacroix/netbox-cadplan.git
+pip install git+https://github.com/SelfSimon/netbox-cadplan.git
 ```
 
 ### 2. Enable the plugin in NetBox
@@ -45,13 +46,29 @@ sudo systemctl restart netbox netbox-rq
 ## Usage
 
 - Import a DXF/DWG file to create a **Plan**, linked to a Site and optionally
-  a Location.
+  a Location, and pick the drawing layer that defines the floor's closed
+  boundaries.
 - The plan is automatically split into **zones** matched to Locations
-  descending from the plan's scope.
+  descending from the plan's scope. Each zone can be associated with a
+  Location from the plan's own tab.
 - Each Location gets a dedicated tab showing the SVG of its zone.
-- Objects (device types with a configured plan shape) can be placed on a
-  zone and repositioned interactively.
-- Plans can be re-exported to DXF.
+- **Object placement**: device types with a configured plan shape appear in
+  an "Objects to place" list and can be dropped onto a zone, then dragged,
+  rotated, and repositioned interactively on the canvas.
+- **Position by distance**: move a placed object to an exact offset instead
+  of dragging it by hand.
+- Selecting an object highlights it and shows its properties (location,
+  rotation, distances) in a side panel.
+- **Center view** / fit-to-view controls keep the canvas readable regardless
+  of the plan's real-world size, with theme-aware colors for labels.
+- Plans can be **re-exported to DXF** once zones and layer selection are set.
+
+## Configuring device type plan shapes
+
+To make a device type placeable on a plan, configure its shape (width,
+height, rotation handling) from the device type's edit page — devices
+without a configured shape show up as "unplaceable" in the plan editor with
+a direct link to that configuration screen.
 
 ## License
 
@@ -59,7 +76,7 @@ MIT — see [LICENSE](LICENSE).
 
 ## Contributors
 
-- [Simon Lacroix](https://github.com/simonlacroix) — Original author
+See [CONTRIBUTORS.md](CONTRIBUTORS.md).
 
 ## Developer setup
 
