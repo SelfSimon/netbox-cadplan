@@ -11,7 +11,7 @@ class NetBoxCadPlanConfig(PluginConfig):
     name = "netbox_cadplan"
     verbose_name = "NetBox CadPlan"
     description = "Visual floor-plan management linked to Sites and Locations"
-    version = "0.2.0"
+    version = "0.2.1"
     author = "Simon Lacroix"
     author_email = "simonlacroix@live.ca"
     base_url = "cadplan"
