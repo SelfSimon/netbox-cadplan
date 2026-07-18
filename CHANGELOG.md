@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.2.1
+
+- Fix README compatibility table, contributors section, and source install
+  URL; expand the feature list (docs only, no code change).
+
 ## 0.2.0
 
 - Add "Position by distance" tool and object selection highlighting on the
