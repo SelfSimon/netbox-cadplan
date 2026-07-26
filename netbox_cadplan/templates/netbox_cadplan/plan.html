@@ -173,8 +173,9 @@
 and without ETag/Last-Modified, so the browser never re-downloads the old version without this.
 Increment N on every change to plan_editor.js / plan.css.
 {% endcomment %}
-<link rel="stylesheet" href="{% static 'netbox_cadplan/css/plan.css' %}?v=75">
+<link rel="stylesheet" href="{% static 'netbox_cadplan/css/plan.css' %}?v=79">
 <script src="https://unpkg.com/konva@9/konva.min.js"></script>
+<script src="https://unpkg.com/tom-select@2.6.2/dist/js/tom-select.complete.min.js" integrity="sha384-1mYKSrq1Nu5YJmWrIU9cvwWQlUyyukJJM9XMkAxY03nb/T69CK+Sn7rjFxVU3SSM" crossorigin="anonymous"></script>
 <script src="{% url 'plugins:netbox_cadplan:javascript-catalog' %}"></script>
-<script src="{% static 'netbox_cadplan/js/plan_editor.js' %}?v=75"></script>
+<script src="{% static 'netbox_cadplan/js/plan_editor.js' %}?v=78"></script>
 {% endblock %}

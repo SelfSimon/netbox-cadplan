@@ -456,17 +456,6 @@ def plan_layer_preview(request, pk):
     return JsonResponse({"strokes": normalized})
 
 
-def _location_display(location, root):
-    """Hierarchical path of `location` relative to `root`
-    (e.g. 'Room 114 / Room 114.1')."""
-    chain = []
-    node = location
-    while node and node.pk != root.pk:
-        chain.append(node.name)
-        node = node.parent
-    return " / ".join(reversed(chain))
-
-
 @login_required
 @require_GET
 def plan_locations(request, pk):
@@ -477,20 +466,28 @@ def plan_locations(request, pk):
     all the Locations of that site. The NetBox API /api/dcim/locations/ only
     filters by direct parent (parent_id); nested Locations (e.g. Room 114 ->
     Room 114.1) require a real MPTT tree query.
+
+    `depth` is relative to the plan's root Location (0 if there isn't one),
+    for hierarchical (indented) rendering client-side. `Location.objects` is
+    an MPTT `TreeManager`, which always orders querysets by (tree_id, lft) —
+    i.e. `candidates` is already in depth-first tree order, so no further
+    sorting is applied.
     """
     plan = get_object_or_404(Plan, pk=pk)
     if not request.user.has_perm("netbox_cadplan.view_plan"):
         return HttpResponseForbidden()
 
     candidates = _candidate_locations(plan, request.user)
-    if plan.location:
-        locations = [
-            {"id": loc.pk, "name": _location_display(loc, plan.location)}
-            for loc in candidates
-        ]
-    else:
-        locations = [{"id": loc.pk, "name": loc.name} for loc in candidates]
-    locations.sort(key=lambda item: item["name"])
+    root_level = plan.location.level if plan.location else 0
+    locations = [
+        {
+            "id": loc.pk,
+            "name": loc.name,
+            "description": loc.description,
+            "depth": loc.level - root_level,
+        }
+        for loc in candidates
+    ]
     return JsonResponse({"locations": locations})
 
 

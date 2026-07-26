@@ -1,0 +1,7 @@
+/* netbox.css only mutes disabled *optgroups* ([data-disabled] ancestor); Tom
+   Select marks an individually-disabled option with aria-disabled instead, so
+   that case needs its own rule here. */
+#np-association-panel .option[aria-disabled="true"] {
+  opacity: .5;
+  cursor: not-allowed;
+}

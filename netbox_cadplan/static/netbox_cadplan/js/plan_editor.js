@@ -2378,6 +2378,7 @@
     const feedback = document.getElementById('np-save-feedback');
 
     let locationsCache = null;
+    let locationSelect = null;
 
     function fetchLocations() {
       if (locationsCache) return Promise.resolve(locationsCache);
@@ -2389,36 +2390,77 @@
         });
     }
 
+    // Mirrors NetBox's own rendering of the Location field (Tom Select,
+    // dynamic.ts:renderOption): dashes for hierarchical depth, description
+    // in muted text underneath.
+    function renderLocationOption(data, escape) {
+      let html = '<div>';
+      if (typeof data.depth === 'number' && data.depth > 0) {
+        html = `${html}${'─'.repeat(data.depth)} `;
+      }
+      html = `${html}${escape(data.name)}`;
+      if (data.usedByZoneNumber) {
+        html = `${html} <small class="text-secondary">${escape(interpolate(gettext('(zone %(number)s)'), { number: data.usedByZoneNumber }, true))}</small>`;
+      }
+      if (data.description) {
+        html = `${html}<br /><small class="text-secondary">${escape(data.description)}</small>`;
+      }
+      return html + '</div>';
+    }
+
+    function renderLocationItem(data, escape) {
+      return `<div>${escape(data.name)}</div>`;
+    }
+
+    function destroyLocationSelect() {
+      if (locationSelect) {
+        locationSelect.destroy();
+        locationSelect = null;
+      }
+    }
+
     function renderPanel(zone, locations) {
-      const usedIds = new Set(
+      const usedByZoneNumber = new Map(
         canvas.zones
           .filter(function (z) { return z.number !== zone.number && z.location_id; })
-          .map(function (z) { return z.location_id; })
+          .map(function (z) { return [z.location_id, z.number]; })
       );
 
+      destroyLocationSelect();
       panel.innerHTML = '';
 
       const title = document.createElement('p');
       title.innerHTML = `<strong>${interpolate(gettext('Zone %(number)s selected'), { number: zone.number }, true)}</strong>`;
       panel.appendChild(title);
 
+      // Locations already associated with another zone stay in the list (so the
+      // tree structure of their descendants remains intact) but are rendered as
+      // disabled: Tom Select only marks an option `data-selectable` when its
+      // `disabled` field is falsy, so a disabled option can't be clicked or
+      // reached via keyboard navigation.
+      const options = [{ id: '', name: gettext('— No location —') }].concat(
+        locations.map(function (loc) {
+          const number = usedByZoneNumber.get(loc.id);
+          if (number === undefined) return loc;
+          return Object.assign({}, loc, { disabled: true, usedByZoneNumber: number });
+        })
+      );
+
       const select = document.createElement('select');
-      select.className = 'form-select mb-2';
-
-      const noneOption = document.createElement('option');
-      noneOption.value = '';
-      noneOption.textContent = gettext('— No location —');
-      select.appendChild(noneOption);
-
-      locations.forEach(function (loc) {
-        if (usedIds.has(loc.id)) return;
-        const option = document.createElement('option');
-        option.value = loc.id;
-        option.textContent = loc.name;
-        if (loc.id === zone.location_id) option.selected = true;
-        select.appendChild(option);
-      });
+      select.className = 'mb-2';
       panel.appendChild(select);
+
+      locationSelect = new TomSelect(select, {
+        options: options,
+        valueField: 'id',
+        labelField: 'name',
+        searchField: ['name'],
+        items: [String(zone.location_id || '')],
+        // Tom Select's default maxOptions (50) would otherwise truncate the
+        // list before the full location tree is shown.
+        maxOptions: null,
+        render: { option: renderLocationOption, item: renderLocationItem },
+      });
 
       const assocBtn = document.createElement('button');
       assocBtn.type = 'button';
@@ -2441,8 +2483,10 @@
           const ok = window.confirm(confirmMessage);
           if (!ok) return;
         }
-        const selectedOption = select.options[select.selectedIndex];
-        const locationName = locationId ? selectedOption.textContent : null;
+        const selectedLocation = locationId
+          ? options.find(function (o) { return o.id === locationId; })
+          : null;
+        const locationName = selectedLocation ? selectedLocation.name : null;
         canvas.setAssociated(zone.number, locationId, locationName);
         if (feedback) feedback.textContent = '';
       });
@@ -2451,9 +2495,11 @@
 
     canvas.onZoneSelected(function (zone) {
       if (!zone) {
+        destroyLocationSelect();
         panel.innerHTML = `<p class="text-muted mb-0">${gettext('Click a zone on the plan to associate it with a location.')}</p>`;
         return;
       }
+      destroyLocationSelect();
       panel.innerHTML = `<p class="text-muted mb-0">${gettext('Loading locations…')}</p>`;
       fetchLocations()
         .then(function (locations) { renderPanel(zone, locations); })
